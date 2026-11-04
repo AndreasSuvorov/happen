@@ -30,8 +30,19 @@ export interface Entry {
   kcal_mid: number
   kcal_high: number
   protein_g: number | null
+  carbs_g: number | null
+  fat_g: number | null
   confidence: 'hoch' | 'mittel' | 'niedrig' | null
   status: string
+}
+
+export interface Activity {
+  id: string
+  started_at: string
+  type: string
+  distance_km: number | null
+  duration_min: number | null
+  kcal_gross: number | null
 }
 
 export interface Weight {

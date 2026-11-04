@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react'
-import { supabase, type Entry, type Profile, type Weight } from '../lib/supabase'
+import { supabase, type Activity, type Entry, type Profile, type Weight } from '../lib/supabase'
 import { baseTdee, dailyBudget } from '../lib/nutrition'
+
+const ACTIVITY_ICON: Record<string, string> = {
+  run: '🏃',
+  bike: '🚴',
+  walk: '🚶',
+  strength: '🏋️',
+}
 
 function localDate(d = new Date()) {
   return d.toLocaleDateString('en-CA') // YYYY-MM-DD, lokale Zeitzone
@@ -54,7 +61,7 @@ function CalorieBar({ low, mid, high, max }: { low: number; mid: number; high: n
 export default function Dashboard({ profile }: { profile: Profile }) {
   const [entries, setEntries] = useState<Entry[]>([])
   const [weights, setWeights] = useState<Weight[]>([])
-  const [runKcalToday, setRunKcalToday] = useState(0)
+  const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -63,7 +70,7 @@ export default function Dashboard({ profile }: { profile: Profile }) {
     Promise.all([
       supabase
         .from('entries')
-        .select('id, eaten_at, meal, title, kcal_low, kcal_mid, kcal_high, protein_g, confidence, status')
+        .select('id, eaten_at, meal, title, kcal_low, kcal_mid, kcal_high, protein_g, carbs_g, fat_g, confidence, status')
         .eq('user_id', profile.id)
         .neq('status', 'deleted')
         .gte('eaten_at', from)
@@ -76,15 +83,15 @@ export default function Dashboard({ profile }: { profile: Profile }) {
         .limit(14),
       supabase
         .from('activities')
-        .select('kcal_gross')
+        .select('id, started_at, type, distance_km, duration_min, kcal_gross')
         .eq('user_id', profile.id)
         .eq('status', 'active')
-        .gte('started_at', from),
+        .gte('started_at', from)
+        .order('started_at', { ascending: false }),
     ]).then(([e, w, a]) => {
       setEntries((e.data as Entry[]) ?? [])
       setWeights((w.data as Weight[]) ?? [])
-      const runs = (a.data as { kcal_gross: number | null }[]) ?? []
-      setRunKcalToday(runs.reduce((s, r) => s + (r.kcal_gross ?? 0), 0))
+      setActivities((a.data as Activity[]) ?? [])
       setLoading(false)
     })
   }, [profile.id])
@@ -97,9 +104,12 @@ export default function Dashboard({ profile }: { profile: Profile }) {
       mid: acc.mid + e.kcal_mid,
       high: acc.high + e.kcal_high,
       protein: acc.protein + (e.protein_g ?? 0),
+      carbs: acc.carbs + (e.carbs_g ?? 0),
+      fat: acc.fat + (e.fat_g ?? 0),
     }),
-    { low: 0, mid: 0, high: 0, protein: 0 },
+    { low: 0, mid: 0, high: 0, protein: 0, carbs: 0, fat: 0 },
   )
+  const runKcalToday = activities.reduce((s, a) => s + (a.kcal_gross ?? 0), 0)
   const latestWeight = weights[0]
   const tdee = latestWeight
     ? baseTdee(
@@ -147,10 +157,40 @@ export default function Dashboard({ profile }: { profile: Profile }) {
                 mindestens ein Gewicht erfassen.
               </p>
             )}
-            <p className="muted small">{totals.protein} g Protein · {entries.length} Einträge</p>
+            <p className="muted small">
+              P {totals.protein} g · K {totals.carbs} g · F {totals.fat} g · {entries.length} Einträge
+            </p>
           </>
         )}
       </section>
+
+      {activities.length > 0 && (
+        <section className="card">
+          <h2>Aktivität</h2>
+          <ul className="entry-list">
+            {activities.map((a) => (
+              <li key={a.id}>
+                <span className="meal-icon">{ACTIVITY_ICON[a.type] ?? '🏃'}</span>
+                <div className="entry-main">
+                  <strong>
+                    {a.distance_km ? `${a.distance_km} km` : a.type}
+                    {a.duration_min ? ` · ${a.duration_min} min` : ''}
+                  </strong>
+                  <span className="muted small">
+                    {new Date(a.started_at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+                {a.kcal_gross != null && (
+                  <div className="entry-kcal">
+                    <span>{a.kcal_gross} kcal</span>
+                    <span className="muted small">brutto</span>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="card">
         <h2>Gewicht</h2>

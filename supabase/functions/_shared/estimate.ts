@@ -27,6 +27,8 @@ export interface Estimate {
   kcal_mid: number;
   kcal_high: number;
   protein_g: number;
+  carbs_g: number;
+  fat_g: number;
   confidence: "hoch" | "mittel" | "niedrig";
   day_offset: number;
   time_hint: string;
@@ -56,6 +58,8 @@ const SCHEMA = obj({
   kcal_mid: int,
   kcal_high: int,
   protein_g: int,
+  carbs_g: int,
+  fat_g: int,
   confidence: { type: "string", enum: ["hoch", "mittel", "niedrig"] },
   day_offset: int,
   time_hint: str,
@@ -94,7 +98,9 @@ Felder
 - time_hint: "HH:MM", wenn der Nutzer eine Uhrzeit nennt oder klar impliziert ("heute Mittag" = "12:30"), sonst "".
 - note: ein kurzer Satz, was die Schätzung am stärksten beeinflusst (z. B. "Annahme: 1 EL Öl zum Braten"), oder "".
 - activity: nur bei kind="activity" befüllen (type "run", "bike", "walk", "strength" …), sonst type "" und 0-Werte.
-- Bei kind != "food": items = [], alle kcal-Werte 0, protein_g 0.`;
+- protein_g/carbs_g/fat_g: Schätze alle drei Makros in Gramm, so gut wie bei kcal möglich (Kohlenhydrate und Fett
+  dürfen ungenauer sein als Protein – lieber eine plausible Zahl als 0).
+- Bei kind != "food": items = [], alle kcal-Werte 0, protein_g/carbs_g/fat_g 0.`;
 
 export interface EstimateInput {
   text?: string; // Bildunterschrift, Transkript oder Nachricht
@@ -154,6 +160,8 @@ export function sanitize(e: Estimate): Estimate {
   fix(e);
   e.question.options.forEach(fix);
   e.protein_g = Math.max(0, Math.round(e.protein_g || 0));
+  e.carbs_g = Math.max(0, Math.round(e.carbs_g || 0));
+  e.fat_g = Math.max(0, Math.round(e.fat_g || 0));
   e.day_offset = Math.max(-7, Math.min(0, Math.round(e.day_offset || 0)));
   return e;
 }

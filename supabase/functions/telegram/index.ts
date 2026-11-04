@@ -161,6 +161,8 @@ async function saveFood(user: UserRow, messageId: string, est: Estimate, transcr
       kcal_mid: est.kcal_mid,
       kcal_high: est.kcal_high,
       protein_g: est.protein_g,
+      carbs_g: est.carbs_g,
+      fat_g: est.fat_g,
       confidence: est.confidence,
       note: est.note || null,
       question: hasQuestion ? est.question : null,
@@ -177,7 +179,8 @@ async function saveFood(user: UserRow, messageId: string, est: Estimate, transcr
 async function entryText(user: UserRow, entry: any): Promise<string> {
   const lines = [
     `<b>${tg.escapeHtml(entry.title)}</b>`,
-    `≈ ${fmtKcal(entry.kcal_mid)} kcal (${fmtKcal(entry.kcal_low)}–${fmtKcal(entry.kcal_high)}) · Protein ~${entry.protein_g ?? 0} g`,
+    `≈ ${fmtKcal(entry.kcal_mid)} kcal (${fmtKcal(entry.kcal_low)}–${fmtKcal(entry.kcal_high)})`,
+    `P ${entry.protein_g ?? 0} g · K ${entry.carbs_g ?? 0} g · F ${entry.fat_g ?? 0} g`,
   ];
   if (entry.note) lines.push(`<i>${tg.escapeHtml(entry.note)}</i>`);
   if (entry.answer) lines.push(`✓ ${tg.escapeHtml(entry.answer)}`);
