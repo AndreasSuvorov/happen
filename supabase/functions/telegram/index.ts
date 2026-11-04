@@ -1,5 +1,5 @@
 // Telegram-Webhook für Happen: Foto, Sprache oder Text rein → Eintrag mit Kalorienspanne raus.
-import { db, dayBounds, dayTotals, knownMeals, latestKg, profileOf, upsertUser, weightTrend, type UserRow } from "../_shared/db.ts";
+import { db, dayBounds, dayTotals, findUserByChatId, knownMeals, latestKg, profileOf, redeemLinkCode, weightTrend, type UserRow } from "../_shared/db.ts";
 import { estimate, EstimateRefused, type Estimate } from "../_shared/estimate.ts";
 import {
   baseTdee,
@@ -16,9 +16,6 @@ import { sttEnabled, transcribe } from "../_shared/stt.ts";
 import * as tg from "../_shared/telegram.ts";
 
 const WEBHOOK_SECRET = Deno.env.get("TELEGRAM_WEBHOOK_SECRET") ?? "";
-const ALLOWED = new Set(
-  (Deno.env.get("ALLOWED_CHAT_IDS") ?? "").split(",").map((s) => s.trim()).filter(Boolean).map(Number),
-);
 
 // Von der Supabase Edge Runtime bereitgestellt.
 declare const EdgeRuntime: { waitUntil(p: Promise<unknown>): void };
@@ -42,12 +39,24 @@ async function handle(update: Update) {
   const msg = update.message;
   if (!msg?.chat?.id) return;
   const chatId: number = msg.chat.id;
+  const text0: string = (msg.text ?? "").trim();
 
-  if (!ALLOWED.has(chatId)) {
-    await tg.sendMessage(chatId, `Happen ist noch privat. Deine Chat-ID ist <code>${chatId}</code>.`);
+  let user = await findUserByChatId(chatId);
+  if (!user) {
+    const m = text0.match(/^\/start\s+(\S+)/);
+    if (m) {
+      user = await redeemLinkCode(m[1], chatId);
+      if (user) {
+        await tg.sendMessage(chatId, "Verbunden! Dein Telegram-Chat ist jetzt mit deinem Happen-Konto verknüpft.");
+        return;
+      }
+    }
+    await tg.sendMessage(
+      chatId,
+      "Dieser Chat ist noch mit keinem Happen-Konto verknüpft. Öffne die App, logg dich ein und verbinde Telegram unter „Einstellungen“.",
+    );
     return;
   }
-  const user = await upsertUser(chatId, msg.from?.first_name);
   const text: string = (msg.text ?? msg.caption ?? "").trim();
 
   // Befehle und Gewicht brauchen keine KI.

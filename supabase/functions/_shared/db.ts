@@ -29,11 +29,20 @@ function must<T>(res: { data: T | null; error: { message: string } | null }): T 
   return res.data as T;
 }
 
-export async function upsertUser(chatId: number, firstName?: string): Promise<UserRow> {
-  const existing = must(await db.from("users").select("*").eq("telegram_chat_id", chatId).maybeSingle());
-  if (existing) return existing as UserRow;
+/** Telegram ist nur noch ein verknüpfter Kanal: kein Auto-Anlegen mehr, nur Nachschlagen. */
+export async function findUserByChatId(chatId: number): Promise<UserRow | null> {
+  return must(await db.from("users").select("*").eq("telegram_chat_id", chatId).maybeSingle()) as UserRow | null;
+}
+
+/** Löst einen in der PWA erzeugten Einmal-Code ein und verknüpft den Telegram-Chat mit dem Profil. */
+export async function redeemLinkCode(code: string, chatId: number): Promise<UserRow | null> {
+  const row = must(
+    await db.from("telegram_link_codes").select("user_id, expires_at").eq("code", code).maybeSingle(),
+  ) as { user_id: string; expires_at: string } | null;
+  if (!row || new Date(row.expires_at) < new Date()) return null;
+  await db.from("telegram_link_codes").delete().eq("code", code);
   return must(
-    await db.from("users").insert({ telegram_chat_id: chatId, first_name: firstName ?? null }).select().single(),
+    await db.from("users").update({ telegram_chat_id: chatId }).eq("id", row.user_id).select().single(),
   ) as UserRow;
 }
 
