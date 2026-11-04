@@ -5,6 +5,51 @@ function localDate(d = new Date()) {
   return d.toLocaleDateString('en-CA') // YYYY-MM-DD, lokale Zeitzone
 }
 
+const MEAL_ICON: Record<string, string> = {
+  breakfast: '🍳',
+  lunch: '🍲',
+  dinner: '🍽️',
+  snack: '🍎',
+  drink: '🥤',
+}
+
+function Sparkline({ points }: { points: { x: string; kg: number }[] }) {
+  if (points.length < 2) return null
+  const w = 280
+  const h = 56
+  const pad = 6
+  const kgs = points.map((p) => p.kg)
+  const min = Math.min(...kgs)
+  const max = Math.max(...kgs)
+  const span = max - min || 1
+  const coords = points.map((p, i) => {
+    const x = pad + (i / (points.length - 1)) * (w - pad * 2)
+    const y = pad + (1 - (p.kg - min) / span) * (h - pad * 2)
+    return [x, y] as const
+  })
+  const path = coords.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ')
+  const [lastX, lastY] = coords[coords.length - 1]
+  const trendUp = points[points.length - 1].kg > points[0].kg
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="sparkline">
+      <path d={path} fill="none" stroke={trendUp ? '#f87171' : '#4ade80'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={lastX} cy={lastY} r="3.5" fill={trendUp ? '#f87171' : '#4ade80'} />
+    </svg>
+  )
+}
+
+function CalorieBar({ low, mid, high, max }: { low: number; mid: number; high: number; max: number }) {
+  const pct = (v: number) => `${Math.min(100, (v / max) * 100)}%`
+  return (
+    <div className="kcal-bar">
+      <div className="kcal-bar-track">
+        <div className="kcal-bar-range" style={{ left: pct(low), width: `calc(${pct(high)} - ${pct(low)})` }} />
+        <div className="kcal-bar-mid" style={{ left: pct(mid) }} />
+      </div>
+    </div>
+  )
+}
+
 export default function Dashboard({ profile }: { profile: Profile }) {
   const [entries, setEntries] = useState<Entry[]>([])
   const [weights, setWeights] = useState<Weight[]>([])
@@ -45,25 +90,30 @@ export default function Dashboard({ profile }: { profile: Profile }) {
     }),
     { low: 0, mid: 0, high: 0, protein: 0 },
   )
+  const budget = 2200 // grobe Orientierung, bis das echte Tagesbudget aus dem Profil berechnet wird
   const latestWeight = weights[0]
   const trend =
     weights.length >= 2 ? Number((weights[0].kg - weights[weights.length - 1].kg).toFixed(1)) : null
+  const sparkPoints = [...weights].reverse().map((w) => ({ x: w.measured_on, kg: Number(w.kg) }))
+
+  const today = new Date().toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })
 
   return (
     <div className="screen">
+      <p className="date-heading">{today}</p>
+
       <section className="card">
         <h2>Heute</h2>
         {entries.length === 0 ? (
           <p className="muted">Noch nichts erfasst – schick Happen ein Foto oder eine Nachricht.</p>
         ) : (
           <>
-            <p className="big">
-              ≈ {totals.mid} kcal{' '}
-              <span className="muted">
-                ({totals.low}–{totals.high})
-              </span>
-            </p>
-            <p className="muted">{totals.protein} g Protein · {entries.length} Einträge</p>
+            <div className="kcal-row">
+              <span className="big">{totals.mid}</span>
+              <span className="muted"> kcal · {totals.low}–{totals.high}</span>
+            </div>
+            <CalorieBar low={totals.low} mid={totals.mid} high={totals.high} max={budget} />
+            <p className="muted small">{totals.protein} g Protein · {entries.length} Einträge</p>
           </>
         )}
       </section>
@@ -71,13 +121,21 @@ export default function Dashboard({ profile }: { profile: Profile }) {
       <section className="card">
         <h2>Gewicht</h2>
         {latestWeight ? (
-          <>
-            <p className="big">{latestWeight.kg} kg</p>
-            <p className="muted">
-              zuletzt {new Date(latestWeight.measured_on).toLocaleDateString('de-DE')}
-              {trend !== null && ` · ${trend > 0 ? '+' : ''}${trend} kg über ${weights.length} Messungen`}
-            </p>
-          </>
+          <div className="weight-row">
+            <div>
+              <p className="big">{latestWeight.kg} kg</p>
+              <p className="muted small">
+                {new Date(latestWeight.measured_on).toLocaleDateString('de-DE')}
+                {trend !== null && (
+                  <span className={trend > 0 ? 'pill up' : trend < 0 ? 'pill down' : 'pill'}>
+                    {trend > 0 ? '+' : ''}
+                    {trend} kg
+                  </span>
+                )}
+              </p>
+            </div>
+            <Sparkline points={sparkPoints} />
+          </div>
         ) : (
           <p className="muted">Noch kein Gewicht erfasst.</p>
         )}
@@ -91,19 +149,19 @@ export default function Dashboard({ profile }: { profile: Profile }) {
           <ul className="entry-list">
             {entries.map((e) => (
               <li key={e.id}>
-                <div>
+                <span className="meal-icon">{MEAL_ICON[e.meal ?? ''] ?? '🍴'}</span>
+                <div className="entry-main">
                   <strong>{e.title}</strong>
-                  <span className="muted">
-                    {' '}
-                    · {new Date(e.eaten_at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
+                  <span className="muted small">
+                    {new Date(e.eaten_at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
-                <span>
-                  {e.kcal_mid} kcal{' '}
-                  <span className="muted">
-                    ({e.kcal_low}–{e.kcal_high})
+                <div className="entry-kcal">
+                  <span>{e.kcal_mid} kcal</span>
+                  <span className="muted small">
+                    {e.kcal_low}–{e.kcal_high}
                   </span>
-                </span>
+                </div>
               </li>
             ))}
           </ul>
