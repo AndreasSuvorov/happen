@@ -169,6 +169,16 @@ button.ghost {
   margin-bottom: 0.5rem;
 }
 
+.budget-line {
+  font-size: 0.85rem;
+  color: var(--accent);
+  margin: 0 0 0.5rem;
+}
+
+.budget-line.over {
+  color: var(--error);
+}
+
 .kcal-bar-track {
   position: relative;
   height: 8px;

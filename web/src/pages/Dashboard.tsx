@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase, type Entry, type Profile, type Weight } from '../lib/supabase'
+import { baseTdee, dailyBudget } from '../lib/nutrition'
 
 function localDate(d = new Date()) {
   return d.toLocaleDateString('en-CA') // YYYY-MM-DD, lokale Zeitzone
@@ -53,6 +54,7 @@ function CalorieBar({ low, mid, high, max }: { low: number; mid: number; high: n
 export default function Dashboard({ profile }: { profile: Profile }) {
   const [entries, setEntries] = useState<Entry[]>([])
   const [weights, setWeights] = useState<Weight[]>([])
+  const [runKcalToday, setRunKcalToday] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -72,9 +74,17 @@ export default function Dashboard({ profile }: { profile: Profile }) {
         .eq('user_id', profile.id)
         .order('measured_on', { ascending: false })
         .limit(14),
-    ]).then(([e, w]) => {
+      supabase
+        .from('activities')
+        .select('kcal_gross')
+        .eq('user_id', profile.id)
+        .eq('status', 'active')
+        .gte('started_at', from),
+    ]).then(([e, w, a]) => {
       setEntries((e.data as Entry[]) ?? [])
       setWeights((w.data as Weight[]) ?? [])
+      const runs = (a.data as { kcal_gross: number | null }[]) ?? []
+      setRunKcalToday(runs.reduce((s, r) => s + (r.kcal_gross ?? 0), 0))
       setLoading(false)
     })
   }, [profile.id])
@@ -90,8 +100,20 @@ export default function Dashboard({ profile }: { profile: Profile }) {
     }),
     { low: 0, mid: 0, high: 0, protein: 0 },
   )
-  const budget = 2200 // grobe Orientierung, bis das echte Tagesbudget aus dem Profil berechnet wird
   const latestWeight = weights[0]
+  const tdee = latestWeight
+    ? baseTdee(
+        {
+          heightCm: profile.height_cm,
+          birthYear: profile.birth_year,
+          sex: profile.sex,
+          goalKgPerWeek: Number(profile.goal_kg_per_week),
+        },
+        Number(latestWeight.kg),
+      )
+    : null
+  const budget = tdee ? dailyBudget(tdee, Number(profile.goal_kg_per_week), runKcalToday) : null
+  const left = budget !== null ? budget - totals.mid : null
   const trend =
     weights.length >= 2 ? Number((weights[0].kg - weights[weights.length - 1].kg).toFixed(1)) : null
   const sparkPoints = [...weights].reverse().map((w) => ({ x: w.measured_on, kg: Number(w.kg) }))
@@ -112,7 +134,19 @@ export default function Dashboard({ profile }: { profile: Profile }) {
               <span className="big">{totals.mid}</span>
               <span className="muted"> kcal · {totals.low}–{totals.high}</span>
             </div>
-            <CalorieBar low={totals.low} mid={totals.mid} high={totals.high} max={budget} />
+            {budget !== null && left !== null ? (
+              <>
+                <CalorieBar low={totals.low} mid={totals.mid} high={totals.high} max={budget} />
+                <p className={left >= 0 ? 'budget-line' : 'budget-line over'}>
+                  {left >= 0 ? `noch ≈ ${left} kcal von ${budget} übrig` : `≈ ${-left} kcal über dem Tagesbudget (${budget})`}
+                </p>
+              </>
+            ) : (
+              <p className="muted small">
+                Tagesbudget fehlt noch – dafür Größe, Geburtsjahr, Geschlecht in den Einstellungen eintragen und
+                mindestens ein Gewicht erfassen.
+              </p>
+            )}
             <p className="muted small">{totals.protein} g Protein · {entries.length} Einträge</p>
           </>
         )}
