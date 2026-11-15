@@ -63,7 +63,7 @@ async function nudgeUser(user: UserRow): Promise<string[]> {
       .neq("status", "deleted")
       .gte("eaten_at", since);
     if (!count && (await claim(user, "lunch", today))) {
-      await sendMessage(chat, "Mittag fehlt noch – kurzes Foto oder ein Satz?");
+      await sendMessage(chat, "Schon gegessen? Ein Satz im Nachhinein reicht, z. B. „Döner und Cola“. Kein Foto nötig.");
       out.push("lunch");
     }
   }
@@ -71,11 +71,11 @@ async function nudgeUser(user: UserRow): Promise<string[]> {
   // 21:00 – Abend-Rückblick
   if (inWindow(hour, minute, 21, 0) && (await claim(user, "recap", today))) {
     const t = await dayTotals(user, today);
-    const summary = t.count ? `Bisher ≈ ${fmtKcal(t.mid)} kcal aus ${t.count} Einträgen.` : "Heute ist noch nichts erfasst.";
-    await sendMessage(
-      chat,
-      `${summary}\nWas gab’s heute noch? Snacks, Getränke, ein Bier? Einfach reinsprechen – oder „nichts mehr“.`,
-    );
+    // Ein leerer Tag wird nicht als Versäumnis gemeldet: ein einziger Eintrag am Abend zählt.
+    const text = t.count
+      ? `Bisher ≈ ${fmtKcal(t.mid)} kcal aus ${t.count} Einträgen.\nWas gab’s heute noch? Snacks, Getränke, ein Bier? Einfach reinsprechen – oder „nichts mehr“.`
+      : "Was war heute das Größte, das du gegessen hast? Ein Satz reicht. Der Rest des Tages muss nicht vollständig sein – ein Eintrag zählt.";
+    await sendMessage(chat, text);
     out.push("recap");
   }
 
