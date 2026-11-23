@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase, type Profile } from '../lib/supabase'
+import GarminCard from '../components/GarminCard'
 
 export default function Settings({
   profile,
@@ -82,6 +83,8 @@ export default function Settings({
           </>
         )}
       </section>
+
+      <GarminCard userId={profile.id} />
 
       <section className="card">
         <h2>Profil</h2>

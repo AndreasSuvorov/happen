@@ -1,0 +1,66 @@
+[
+  {
+    "activityId": 21000000001,
+    "activityName": "Laufband",
+    "startTimeLocal": "2026-11-22 07:10:00",
+    "startTimeGMT": "2026-11-22 06:10:00",
+    "activityType": {
+      "typeId": 18,
+      "typeKey": "treadmill_running"
+    },
+    "distance": 5200.4,
+    "duration": 1980.2,
+    "elevationGain": null,
+    "averageHR": 139.4,
+    "maxHR": 151,
+    "hrTimeInZone_1": 300,
+    "hrTimeInZone_2": 1500,
+    "hrTimeInZone_3": 180,
+    "hrTimeInZone_4": 0,
+    "hrTimeInZone_5": 0,
+    "activityTrainingLoad": 48.2,
+    "aerobicTrainingEffect": 2.4,
+    "anaerobicTrainingEffect": 0,
+    "trainingEffectLabel": "RECOVERY",
+    "averageRunningCadenceInStepsPerMinute": 158.5
+  },
+  {
+    "activityId": 21000000002,
+    "activityName": "Abendrunde",
+    "startTimeLocal": "2026-11-21 19:00:00",
+    "startTimeGMT": "2026-11-21 18:00:00",
+    "activityType": {
+      "typeId": 1,
+      "typeKey": "running"
+    },
+    "distance": 6800,
+    "duration": 2700,
+    "elevationGain": 42,
+    "averageHR": 148,
+    "maxHR": 165,
+    "hrTimeInZone_1": 200,
+    "hrTimeInZone_2": 1800,
+    "hrTimeInZone_3": 600,
+    "hrTimeInZone_4": 100,
+    "hrTimeInZone_5": 0,
+    "activityTrainingLoad": 80,
+    "aerobicTrainingEffect": 3.1,
+    "anaerobicTrainingEffect": 0.4,
+    "trainingEffectLabel": "AEROBIC_BASE",
+    "averageRunningCadenceInStepsPerMinute": 162
+  },
+  {
+    "activityId": 21000000003,
+    "activityName": "Kraft",
+    "startTimeLocal": "2026-11-20 18:00:00",
+    "startTimeGMT": "2026-11-20 17:00:00",
+    "activityType": {
+      "typeId": 13,
+      "typeKey": "strength_training"
+    },
+    "distance": null,
+    "duration": 1800,
+    "averageHR": 110,
+    "maxHR": 140
+  }
+]

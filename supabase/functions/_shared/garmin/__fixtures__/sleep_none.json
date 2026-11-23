@@ -1,0 +1,8 @@
+{
+  "dailySleepDTO": {
+    "calendarDate": "2026-11-23",
+    "sleepTimeSeconds": null,
+    "sleepStartTimestampLocal": null,
+    "sleepEndTimestampLocal": null
+  }
+}

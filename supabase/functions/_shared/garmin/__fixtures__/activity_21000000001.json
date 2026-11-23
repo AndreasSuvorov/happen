@@ -1,0 +1,16 @@
+{
+  "activityId": 21000000001,
+  "summaryDTO": {
+    "directWorkoutFeel": 50,
+    "directWorkoutRpe": 30
+  },
+  "splitSummaries": [],
+  "metadataDTO": {
+    "sensors": [
+      {
+        "manufacturer": "GARMIN",
+        "sensorType": "FOOTPOD"
+      }
+    ]
+  }
+}
