@@ -1,0 +1,84 @@
+{
+  "data": [
+    {
+      "calendarDate": "2026-11-21",
+      "movement": {
+        "steps": {
+          "value": 9876
+        }
+      },
+      "heartRate": {
+        "restingValue": 48,
+        "minValue": 45,
+        "maxValue": 168
+      },
+      "calories": {
+        "burnedTotal": 2850,
+        "burnedActive": 650,
+        "burnedResting": 2200
+      },
+      "stress": {
+        "avgLevel": 28,
+        "highStressDurationInMillis": 1800000,
+        "mediumStressDurationInMillis": 3600000,
+        "restDurationInMillis": 50400000,
+        "totalDurationInMillis": 82800000
+      },
+      "bodyBattery": {
+        "minValue": 22,
+        "maxValue": 95,
+        "chargedValue": 70,
+        "drainedValue": 73,
+        "latestValue": 25,
+        "activityEvents": []
+      },
+      "intensityMinutes": {
+        "moderate": 20,
+        "vigorous": 30
+      },
+      "respiration": {
+        "avgValue": 15
+      }
+    },
+    {
+      "calendarDate": "2026-11-22",
+      "movement": {
+        "steps": {
+          "value": 3120
+        }
+      },
+      "heartRate": {
+        "restingValue": 47,
+        "minValue": 46,
+        "maxValue": 150
+      },
+      "calories": {
+        "burnedTotal": 1200,
+        "burnedActive": 300,
+        "burnedResting": 900
+      },
+      "stress": {
+        "avgLevel": -1,
+        "highStressDurationInMillis": 0,
+        "mediumStressDurationInMillis": 600000,
+        "restDurationInMillis": 20000000,
+        "totalDurationInMillis": 36000000
+      },
+      "bodyBattery": {
+        "minValue": 22,
+        "maxValue": 98,
+        "chargedValue": 76,
+        "drainedValue": 10,
+        "latestValue": 88,
+        "activityEvents": []
+      },
+      "intensityMinutes": {
+        "moderate": 0,
+        "vigorous": 0
+      },
+      "respiration": {
+        "avgValue": 16
+      }
+    }
+  ]
+}

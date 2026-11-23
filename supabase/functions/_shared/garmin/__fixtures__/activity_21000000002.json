@@ -1,0 +1,50 @@
+{
+  "activityId": 21000000002,
+  "summaryDTO": {
+    "startTimeLocal": "2026-11-21T19:00:00.0",
+    "distance": 6800,
+    "duration": 2700,
+    "averageHR": 148,
+    "directWorkoutFeel": 75,
+    "directWorkoutRpe": 40,
+    "groundContactTime": 262,
+    "verticalOscillation": 8.4,
+    "strideLength": 98
+  },
+  "splitSummaries": [
+    {
+      "splitType": "RWD_RUN",
+      "duration": 2280.5,
+      "distance": 6300,
+      "noOfSplits": 4
+    },
+    {
+      "splitType": "RWD_WALK",
+      "duration": 300,
+      "distance": 400,
+      "noOfSplits": 3
+    },
+    {
+      "splitType": "RWD_STAND",
+      "duration": 119.5,
+      "distance": 0,
+      "noOfSplits": 2
+    },
+    {
+      "splitType": "INTERVAL_ACTIVE",
+      "duration": 2700,
+      "distance": 6800
+    }
+  ],
+  "metadataDTO": {
+    "sensors": [
+      {
+        "manufacturer": "GARMIN",
+        "serialNumber": 1,
+        "sku": "x",
+        "bleDeviceType": "HEART_RATE",
+        "sourceType": "BLUETOOTH_LOW_ENERGY"
+      }
+    ]
+  }
+}

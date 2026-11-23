@@ -22,3 +22,21 @@ select cron.schedule(
   );
   $$
 );
+
+-- happen Coach (M1): Garmin-Sync alle 20 min. Die Function selbst synchronisiert nur 04:30–23:30 Ortszeit
+-- und nur Verbindungen, deren letzter Sync mindestens 15 min her ist. Nach dem Deploy von "garmin-sync" ausführen.
+select cron.schedule(
+  'happen-garmin-sync',
+  '*/20 * * * *',
+  $$
+  select net.http_post(
+    url     := '<FUNCTIONS_URL>/garmin-sync',
+    headers := jsonb_build_object(
+      'content-type', 'application/json',
+      'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'happen_cron_secret')
+    ),
+    body    := '{}'::jsonb,
+    timeout_milliseconds := 120000
+  );
+  $$
+);

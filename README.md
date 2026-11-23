@@ -21,6 +21,9 @@ pg_cron (alle 15 min) ──▶ Edge Function `nudges` (07:30 Waage, 13:30 Mitta
 - `supabase/functions/_shared/estimate.ts` – Claude-Aufruf mit festem JSON-Schema.
 - `supabase/functions/telegram/` – Webhook, Befehle, Buttons.
 - `supabase/functions/nudges/` – Erinnerungen.
+- `supabase/functions/wearable-connect/`, `garmin-sync/`, `_shared/garmin/` – Garmin-Anbindung (Coach, M1).
+
+Projekt-Wiki: [`docs/wiki/`](docs/wiki/Home.md), u. a. der [Coach-Plan](docs/wiki/Coach-Plan.md).
 
 ## Einrichtung (Supabase self-hosted, Docker)
 
@@ -64,8 +67,9 @@ Variante Supabase Cloud: `supabase db push`, `supabase secrets set …`, `supaba
 ## Tests
 
 ```bash
-node --test tests/nutrition.test.ts
-npx deno@2.5.6 check supabase/functions/telegram/index.ts supabase/functions/nudges/index.ts
+npm install     # nur für PGlite (RLS-Tests)
+npm test        # node --test tests/*.test.ts
+npm run check   # Deno-Typecheck aller Functions
 ```
 
 ## Annahmen (bewusst einfach, werden an der Waage kalibriert)

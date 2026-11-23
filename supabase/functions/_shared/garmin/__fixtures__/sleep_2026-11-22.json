@@ -1,0 +1,28 @@
+{
+  "dailySleepDTO": {
+    "calendarDate": "2026-11-22",
+    "sleepTimeSeconds": 28440,
+    "sleepStartTimestampGMT": 1795296600000,
+    "sleepEndTimestampGMT": 1795325040000,
+    "sleepStartTimestampLocal": 1795300200000,
+    "sleepEndTimestampLocal": 1795328640000,
+    "deepSleepSeconds": 5400,
+    "lightSleepSeconds": 15240,
+    "remSleepSeconds": 7800,
+    "awakeSleepSeconds": 600,
+    "awakeCount": 1,
+    "avgHeartRate": 52,
+    "averageRespirationValue": 16,
+    "avgSleepStress": 12.4,
+    "sleepScores": {
+      "overall": {
+        "value": 88,
+        "qualifierKey": "GOOD"
+      }
+    },
+    "sleepNeed": {
+      "actual": 470
+    },
+    "napTimeSeconds": 0
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "dailySleepDTO": {
+    "calendarDate": "2026-11-10",
+    "sleepTimeSeconds": 8280,
+    "sleepStartTimestampLocal": 1794257400000,
+    "sleepEndTimestampLocal": 1794267360000,
+    "deepSleepSeconds": 1200,
+    "lightSleepSeconds": 5000,
+    "remSleepSeconds": 2080,
+    "awakeSleepSeconds": 0,
+    "awakeCount": 0,
+    "avgHeartRate": 60,
+    "averageRespirationValue": 15,
+    "avgSleepStress": 20,
+    "sleepScores": {
+      "overall": {
+        "value": 40
+      }
+    }
+  }
+}
