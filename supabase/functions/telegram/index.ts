@@ -359,8 +359,9 @@ async function undoLast(user: UserRow) {
 // deno-lint-ignore no-explicit-any
 async function handleCallback(cq: any) {
   const chatId: number = cq.message?.chat?.id;
-  if (!ALLOWED.has(chatId)) return tg.answerCallback(cq.id);
-  const user = await upsertUser(chatId);
+  // Wie bei Nachrichten: nur verknüpfte Chats (seit der Mehrbenutzer-Umstellung gibt es keine Allowlist mehr).
+  const user = chatId ? await findUserByChatId(chatId) : null;
+  if (!user) return tg.answerCallback(cq.id);
   const [action, a, b] = String(cq.data ?? "").split(":");
   const entryId = action === "a" ? b : a;
   const { data: entry } = await db.from("entries").select("*").eq("id", entryId).eq("user_id", user.id).maybeSingle();
