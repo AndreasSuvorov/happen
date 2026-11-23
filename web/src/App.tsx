@@ -4,6 +4,7 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Chat from './pages/Chat'
 import Settings from './pages/Settings'
+import MorningBriefing from './pages/MorningBriefing'
 
 export default function App() {
   const { session, profile, loading, refreshProfile } = useAuth()
@@ -11,6 +12,7 @@ export default function App() {
 
   if (loading) return <div className="screen centered">Lädt …</div>
   if (!session) return <Login />
+  if (location.pathname === '/heute') return <MorningBriefing key={session.user.id} authUserId={session.user.id} />
   if (!profile) return <div className="screen centered">Profil wird angelegt …</div>
 
   return (
