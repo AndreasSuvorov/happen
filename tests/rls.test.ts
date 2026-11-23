@@ -147,3 +147,39 @@ test("Vault-Funktionen nur für die Service Role", async () => {
     q(`select public.wearable_secret_read(vault_secret_id) as s from public.wearable_connections where user_id = '${A}'`));
   assert.equal(secret[0].s, `key-${A}`);
 });
+
+test("Push-Limit und Deduplizierung gelten pro Benutzer und lokalem Tag", async () => {
+  const claim = async (user: string, kind: string, date: string, limit: number) =>
+    (await q("select public.claim_coach_push($1, $2, $3, $4) as claimed", [user, kind, date, limit]))[0]?.claimed;
+  await as("authenticated", A, async () => {
+    await assert.rejects(claim(A, "morning", "2026-11-23", 2), /permission denied/);
+  });
+  await as("service_role", null, async () => {
+    assert.equal(await claim(A, "morning", "2026-11-23", 0), false);
+    assert.equal(await claim(A, "morning", "2026-11-23", 2), true);
+    assert.equal(await claim(A, "morning", "2026-11-23", 2), false);
+    assert.equal(await claim(A, "run", "2026-11-23", 2), true);
+    assert.equal(await claim(A, "weekly", "2026-11-23", 2), false);
+    assert.equal(await claim(A, "morning", "2026-11-24", 2), true);
+    assert.equal(await claim(B, "morning", "2026-11-23", 2), true);
+  });
+});
+
+test("Ein Morgenbriefing wird nur für die zugehörige Garmin-Verbindung gespeichert", async () => {
+  const [connection] = await q("select id from public.wearable_connections where user_id = $1", [A]);
+  const save = (userId: string, connectionId: unknown, headline: string) => q(
+    "select public.save_morning_briefing($1, $2, '2026-11-23', 'green', $3::jsonb, null)",
+    [userId, connectionId, JSON.stringify({ headline })],
+  );
+  await as("authenticated", A, async () => {
+    await assert.rejects(save(A, connection.id, "Eigener Versuch"), /permission denied/);
+  });
+  await as("service_role", null, async () => {
+    await save(B, connection.id, "Fremde Verbindung");
+    await save(A, "00000000-0000-0000-0000-0000000000ff", "Gelöschte Verbindung");
+    await save(A, connection.id, "Erster Versand");
+    await save(A, connection.id, "Doppelter Versand");
+  });
+  const rows = await q("select user_id, payload->>'headline' as headline from public.briefings where date = '2026-11-23'");
+  assert.deepEqual(rows, [{ user_id: A, headline: "Erster Versand" }]);
+});

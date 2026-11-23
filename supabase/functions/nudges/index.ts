@@ -1,5 +1,6 @@
-// Erinnerungen, ausgelöst alle 15 Minuten per pg_cron (siehe supabase/cron.sql).
+// Erinnerungen, ausgelöst alle 5 Minuten per pg_cron (siehe supabase/cron.sql).
 import { db, dayBounds, dayTotals, listUsers, weightTrend, type UserRow } from "../_shared/db.ts";
+import { morningNudge } from "../_shared/morning-nudge.ts";
 import { fmtKcal, fmtKg, fmtSigned, localDate, localTime } from "../_shared/nutrition.ts";
 import { sendMessage } from "../_shared/telegram.ts";
 
@@ -43,8 +44,18 @@ async function nudgeUser(user: UserRow): Promise<string[]> {
   const chat = user.telegram_chat_id;
   const out: string[] = [];
 
-  // 07:30 – Wiegen, falls noch kein Wert
-  if (inWindow(hour, minute, 7, 30)) {
+  let coachWeigh = false;
+  try {
+    const morning = await morningNudge(user, now);
+    coachWeigh = morning.handlesWeigh;
+    if (morning.sent) out.push("coach_morning");
+  } catch {
+    console.error("Morgenbriefing konnte nicht verarbeitet werden", user.id);
+  }
+  if (!chat) return out;
+
+  // 07:30 – Der Ernährungsbot erinnert weiterhin ohne aktiven Coach-Kanal.
+  if (!coachWeigh && inWindow(hour, minute, 7, 30)) {
     const { data } = await db.from("weights").select("id").eq("user_id", user.id).eq("measured_on", today).maybeSingle();
     if (!data && (await claim(user, "weigh", today))) {
       await sendMessage(chat, "Guten Morgen ☀️ Kurz auf die Waage? Einfach die Zahl schicken.");

@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { supabase, type Profile } from '../lib/supabase'
 import GarminCard from '../components/GarminCard'
+import CoachSettingsCard from '../components/CoachSettingsCard'
+import { cacheBriefing } from '../lib/briefingCache'
 
 export default function Settings({
   profile,
@@ -51,7 +53,10 @@ export default function Settings({
     else setLinkCode(data as { code: string; deepLink: string | null })
   }
 
-  const signOut = () => supabase.auth.signOut()
+  const signOut = () => {
+    cacheBriefing(profile.auth_user_id, null)
+    return supabase.auth.signOut()
+  }
 
   return (
     <div className="screen">
@@ -84,7 +89,8 @@ export default function Settings({
         )}
       </section>
 
-      <GarminCard userId={profile.id} />
+      <GarminCard userId={profile.id} authUserId={profile.auth_user_id} />
+      <CoachSettingsCard key={profile.id} userId={profile.id} hasTelegram={!!profile.telegram_chat_id} />
 
       <section className="card">
         <h2>Profil</h2>

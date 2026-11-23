@@ -6,12 +6,13 @@ Projektdokumentation. Die Seiten sind so benannt, dass sie 1:1 ins GitHub-Wiki �
 ## Coach (Garmin, Morgenbriefing, Laufanalyse, Coach-Chat)
 - [Coach-Plan](Coach-Plan.md): Umsetzungsplan mit Zielen, Architektur, Datenmodell, UX und Meilensteinen
 - [Coach-M1-Datenbasis](Coach-M1-Datenbasis.md): Stand von Meilenstein 1, Abweichungen vom Plan, Einrichtung
+- [Coach-M2-Morgenbriefing](Coach-M2-Morgenbriefing.md): Erholungsregeln, Morgenbriefing, Einrichtung von Web Push
 
 ## Status der Meilensteine
 | Meilenstein | Inhalt | Status |
 |---|---|---|
 | M1 | Datenbasis: Migrationen, Garmin verbinden, Sync, Aufbereitung | umgesetzt, im Review |
-| M2 | Signale, Briefing, Web Push | offen |
+| M2 | Signale, Briefing, Web Push | umgesetzt, im Review |
 | M3 | „Heute“ und Tageslinie | offen |
 | M4 | Laufanalyse | offen |
 | M5 | Coach-Chat und Wochenrückblick | offen |

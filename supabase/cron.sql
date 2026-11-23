@@ -6,11 +6,12 @@
 create extension if not exists pg_cron;
 create extension if not exists pg_net;
 
-select vault.create_secret('<CRON_SECRET>', 'happen_cron_secret');
+select vault.create_secret('<CRON_SECRET>', 'happen_cron_secret')
+where not exists (select 1 from vault.secrets where name = 'happen_cron_secret');
 
 select cron.schedule(
   'happen-nudges',
-  '*/15 * * * *',
+  '*/5 * * * *',
   $$
   select net.http_post(
     url     := '<FUNCTIONS_URL>/nudges',
@@ -18,7 +19,8 @@ select cron.schedule(
       'content-type', 'application/json',
       'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'happen_cron_secret')
     ),
-    body    := '{}'::jsonb
+    body    := '{}'::jsonb,
+    timeout_milliseconds := 120000
   );
   $$
 );
