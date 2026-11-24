@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { cacheBriefing } from '../lib/briefingCache'
+import { cacheToday } from '../lib/today'
 
 // Garmin verbinden (Personal API Key). Nur sichtbar, wenn das Feature "garmin" freigeschaltet ist.
 // Ausführliches Onboarding folgt später (Plan 9.6); das hier ist die schlanke Version für M1.
@@ -110,7 +110,7 @@ export default function GarminCard({ userId, authUserId }: { userId: string; aut
     if (!window.confirm(question)) return
     void run(async () => {
       setStatus(await call<Status>('wearable-connect', { action: 'disconnect', deleteData }))
-      if (deleteData) cacheBriefing(authUserId, null)
+      if (deleteData) cacheToday(authUserId, null)
     })
   }
 
