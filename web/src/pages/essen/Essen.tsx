@@ -91,7 +91,8 @@ function Content({ d, kind }: { d: EssenData; kind: ReturnType<typeof dayKind> }
       <section aria-label="Mahlzeiten heute" className="essen-meals">
         <h2 className="section-title">Heute</h2>
         <div className="card flush rows">
-          {d.entries.map((e) => (
+          {/* Neueste Mahlzeit oben, darunter die noch offenen Plätze (Mittag, Abend) */}
+          {[...d.entries].reverse().map((e) => (
             <Link key={e.id} to="/tageslinie" className="row essen-row">
               <span className="icon-tile">
                 <MealIcon meal={e.meal} title={e.title} />
