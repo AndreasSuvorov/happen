@@ -69,7 +69,7 @@ function blobToBase64(blob: Blob): Promise<string> {
   })
 }
 
-export default function Chat({ profile: _profile }: { profile: Profile }) {
+export default function Chat({ profile: _profile, capture = false }: { profile: Profile; capture?: boolean }) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [text, setText] = useState('')
   const [recording, setRecording] = useState(false)
@@ -179,6 +179,8 @@ export default function Chat({ profile: _profile }: { profile: Profile }) {
         <input
           type="text"
           placeholder="Was hast du gegessen?"
+          aria-label="Was hast du gegessen?"
+          autoFocus={capture}
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => {

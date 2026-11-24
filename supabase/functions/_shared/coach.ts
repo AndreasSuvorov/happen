@@ -13,7 +13,7 @@ type Briefing = {
   food: string;
   question: ReturnType<typeof detectAnomaly>;
   push: { title: string; body: string };
-  weigh: boolean; deferral: Deferral | null;
+  weigh: boolean; deferral: Deferral | null; additional_deferrals?: Deferral[];
 };
 
 const baseWeek: Record<number, Training["type"]> = {
@@ -42,10 +42,16 @@ function plannedTraining(date: string, cap: number, deferrals: Deferral[]): Trai
   }
 }
 
+function nextFreeTrainingDay(date: string, cap: number, deferrals: Deferral[]): string {
+  let next = addDays(date, 1);
+  while (plannedTraining(next, cap, deferrals).type !== "rest") next = addDays(next, 1);
+  return next;
+}
+
 export async function buildContext(user: UserRow, date: string, settings: Settings) {
   const yesterday = addDays(date, -1);
   const lookback = addDays(date, -29);
-  const [dailyResponse, activityResponse, notesResponse, weightResponse, previousResponse, meals] = await Promise.all([
+  const [dailyResponse, activityResponse, notesResponse, weightResponse, previousResponse, planResponse, meals] = await Promise.all([
     db.from("daily_metrics").select("*").eq("user_id", user.id).gte("date", lookback).lte("date", date).order("date"),
     db.from("wearable_activities").select(activitySelect).eq("user_id", user.id)
       .gte("started_at_local", addDays(date, -6)).lt("started_at_local", addDays(date, 1)),
@@ -54,7 +60,8 @@ export async function buildContext(user: UserRow, date: string, settings: Settin
     db.from("weights").select("measured_on,kg").eq("user_id", user.id).lte("measured_on", date)
       .order("measured_on", { ascending: false }).limit(8),
     db.from("briefings").select("date,payload").eq("user_id", user.id).eq("kind", "morning")
-      .gte("date", addDays(date, -14)).lt("date", date),
+      .eq("ref", "").gte("date", addDays(date, -14)).lt("date", date).order("date", { ascending: false }),
+    db.from("coach_plan_actions").select("action").eq("user_id", user.id).eq("date", yesterday).maybeSingle(),
     dayTotals(user, yesterday),
   ]);
   const days = result(dailyResponse) as DailyMetrics[];
@@ -72,16 +79,30 @@ export async function buildContext(user: UserRow, date: string, settings: Settin
   const recentWeights = weights.filter((row) => row.measured_on >= addDays(date, -6));
   const avgWeight = recentWeights.length
     ? recentWeights.reduce((sum, row) => sum + Number(row.kg), 0) / recentWeights.length : null;
-  const deferrals = (result(previousResponse) ?? [])
-    .map((row) => (row.payload as Partial<Briefing>).deferral).filter((entry): entry is Deferral => !!entry);
-  const training = plannedTraining(date, settings.easy_hr_cap, deferrals);
+  const previous = result(previousResponse) ?? [];
+  const deferrals = previous.flatMap(({ payload }) => {
+    const briefing = payload as Partial<Briefing>;
+    return [...(briefing.deferral ? [briefing.deferral] : []), ...(briefing.additional_deferrals ?? [])];
+  });
+  const scheduled = plannedTraining(date, settings.easy_hr_cap, deferrals);
+  const previousPlan = previous.find((row) => row.date === yesterday)?.payload as Partial<Briefing> | undefined;
+  const movedTraining = result(planResponse)?.action === "move" && !previousPlan?.deferral
+    && previousPlan?.today && previousPlan.today.type !== "rest" ? previousPlan.today : null;
+  const additionalDeferrals: Deferral[] = [];
+  if (movedTraining && scheduled.type !== "rest") {
+    additionalDeferrals.push({
+      from: date, to: nextFreeTrainingDay(date, settings.easy_hr_cap, deferrals), training: scheduled,
+    });
+  }
+  const training = movedTraining ?? scheduled;
   return {
     date, daily_metrics: days.filter((day) => day.date >= addDays(date, -14)),
     normal_ranges: ranges, recovery: signal, question, yesterday_meals: meals,
     daysUntilBaseline: daysUntilBaseline(days, date),
     weight: { latest: weights[0] ?? null, average_7d_kg: avgWeight },
     notes: notes.filter((note) => note.date >= addDays(date, -13)),
-    activities, settings, training, deferrals,
+    activities, settings, training, movedTraining: !!movedTraining, additionalDeferrals,
+    deferrals: [...deferrals, ...additionalDeferrals],
     weigh: weights[0]?.measured_on !== date,
     respiratoryPattern: signal.reasons.some((reason) => reason.metric === "sleep_resp_avg" && reason.severity === "red") &&
       signal.reasons.some((reason) => reason.metric === "sleep_hr_avg" || reason.metric === "hrv_last_night"),
@@ -113,8 +134,7 @@ function ruleBriefing(ctx: Context): Briefing {
   let deferral: Deferral | null = null;
   let text = training.type === "strength" ? "Heute steht Krafttraining an." : "Heute ist trainingsfrei.";
   if (training.duration_min !== null && (status === "yellow" || status === "red")) {
-    let next = addDays(ctx.date, 1);
-    while (plannedTraining(next, ctx.settings.easy_hr_cap, ctx.deferrals).type !== "rest") next = addDays(next, 1);
+    const next = nextFreeTrainingDay(ctx.date, ctx.settings.easy_hr_cap, ctx.deferrals);
     deferral = { from: ctx.date, to: next, training };
     const weekday = new Intl.DateTimeFormat("de-DE", { weekday: "long", timeZone: "UTC" }).format(new Date(next + "T12:00:00Z"));
     if (status === "yellow") {
@@ -125,16 +145,23 @@ function ruleBriefing(ctx: Context): Briefing {
       text = "Heute pausieren oder spazieren. Der Lauf rückt auf " + weekday + ".";
     }
   } else if (status === "red") {
+    if (ctx.movedTraining) deferral = {
+      from: ctx.date, to: nextFreeTrainingDay(ctx.date, ctx.settings.easy_hr_cap, ctx.deferrals), training,
+    };
     training = { type: "rest", duration_min: null, hr_cap: null };
     text = "Heute pausieren oder spazieren.";
   } else if (status === "unknown") {
+    if (ctx.movedTraining) deferral = {
+      from: ctx.date, to: nextFreeTrainingDay(ctx.date, ctx.settings.easy_hr_cap, ctx.deferrals), training,
+    };
     training = { type: "rest", duration_min: null, hr_cap: null };
     text = "Entscheide heute nach deinem Gefühl, wie viel Bewegung dir guttut.";
   } else if (training.duration_min !== null) {
     text = training.duration_min + " Min. locker laufen, Puls unter " + training.hr_cap + ".";
   }
   if (status === "red" && ctx.respiratoryPattern) {
-    const moved = deferral ? " " + text.replace("Heute pausieren oder spazieren. ", "") : "";
+    const moved = deferral && text.startsWith("Heute pausieren oder spazieren. Der Lauf")
+      ? " " + text.replace("Heute pausieren oder spazieren. ", "") : "";
     text = "Achte auf Symptome und lass das Training heute aus." + moved;
   }
 
@@ -146,7 +173,7 @@ function ruleBriefing(ctx: Context): Briefing {
   const push = { title: "Happen · Morgenbriefing", body: ctx.weigh
     ? "Dein Briefing ist da. Ab halb acht kannst du dich kurz wiegen." : "Dein Morgenbriefing ist da." };
   return { status, headline, why, reasons, today: { ...training, text }, food, question: ctx.question,
-    push, weigh: ctx.weigh, deferral };
+    push, weigh: ctx.weigh, deferral, additional_deferrals: ctx.additionalDeferrals };
 }
 
 export async function generateBriefing(kind: "morning", ctx: Context): Promise<{ payload: Briefing; model: string | null }> {

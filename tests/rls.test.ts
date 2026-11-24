@@ -183,3 +183,59 @@ test("Ein Morgenbriefing wird nur für die zugehörige Garmin-Verbindung gespeic
   const rows = await q("select user_id, payload->>'headline' as headline from public.briefings where date = '2026-11-23'");
   assert.deepEqual(rows, [{ user_id: A, headline: "Erster Versand" }]);
 });
+
+test("Heute liefert die Daten des aktuellen Profils und filtert gelöschte Einträge", async () => {
+  await as("anon", null, async () => {
+    await assert.rejects(q("select public.happen_today()"), /permission denied/);
+  });
+  const [initial] = await as("authenticated", A, () => q("select public.happen_today() as snapshot"));
+  const { date } = initial.snapshot as { date: string };
+  await q(`insert into public.entries (user_id, eaten_at, title, kcal_low, kcal_mid, kcal_high, status)
+    values ($1, $3::date + time '12:00', 'Sichtbar', 300, 350, 400, 'confirmed'),
+      ($1, $3::date + time '13:00', 'Gelöscht', 100, 200, 300, 'deleted'),
+      ($2, $3::date + time '12:00', 'Fremd', 400, 500, 600, 'confirmed')`, [A, B, date]);
+  await as("authenticated", A, async () => {
+    const [row] = await q("select public.happen_today() as snapshot");
+    const snapshot = row.snapshot as { user_id: string; entries: { title: string }[]; connection: unknown };
+    assert.equal(snapshot.user_id, A);
+    assert.deepEqual(snapshot.entries.map(({ title }) => title), ["Sichtbar"]);
+    assert.deepEqual(snapshot.connection, { status: "active", backfill: false });
+  });
+});
+
+test("Coach-Rückfrage speichert eine eigene Notiz und übernimmt bei einer Wiederholung die erste Antwort", async () => {
+  const date = "2030-07-10";
+  const noteDate = "2030-07-09";
+  await q("insert into public.briefings (user_id, date, kind, payload) values ($1, $2, 'morning', $3::jsonb)",
+    [A, date, JSON.stringify({ question: { date: noteDate, options: ["Stress", "Andere…"] } })]);
+  const answer = (option: string, text: string | null) =>
+    q("select public.answer_coach_question($1, $2, $3) as answer", [date, option, text]);
+  await as("authenticated", B, async () => {
+    await assert.rejects(answer("Stress", null), /invalid coach question/);
+  });
+  await as("authenticated", A, async () => {
+    await assert.rejects(answer("Andere…", "  "), /invalid coach answer/);
+    await assert.rejects(answer("Hitze", null), /invalid coach question/);
+    const [first] = await answer("Andere…", "  Später Termin  ");
+    const [retry] = await answer("Stress", null);
+    assert.equal((first.answer as { text: string }).text, "Später Termin");
+    assert.deepEqual(retry, first);
+  });
+  assert.deepEqual(await q("select user_id, tag, text from public.context_notes where date = $1", [noteDate]),
+    [{ user_id: A, tag: "Andere…", text: "Später Termin" }]);
+});
+
+test("Planentscheidungen gehören zum eigenen Profil und stehen im Heute-Datenabruf", async () => {
+  await as("authenticated", A, async () => {
+    const [row] = await q("select public.happen_today() as snapshot");
+    const { date } = row.snapshot as { date: string };
+    await assert.rejects(q("insert into public.coach_plan_actions values ($1, $2, 'move', null)", [B, date]),
+      /row-level security/);
+    await q("insert into public.coach_plan_actions values ($1, $2, 'move', null)", [A, date]);
+    const [updated] = await q("select public.happen_today() as snapshot");
+    assert.deepEqual((updated.snapshot as { plan_action: unknown }).plan_action, { action: "move", activity: null });
+  });
+  await as("authenticated", B, async () => {
+    assert.deepEqual(await q("select * from public.coach_plan_actions"), []);
+  });
+});

@@ -8,12 +8,14 @@ Projektdokumentation. Die Seiten sind so benannt, dass sie 1:1 ins GitHub-Wiki �
 - [Coach-M1-Datenbasis](Coach-M1-Datenbasis.md): Stand von Meilenstein 1, Abweichungen vom Plan, Einrichtung
 - [Coach-M2-Morgenbriefing](Coach-M2-Morgenbriefing.md): Erholungsregeln, Morgenbriefing, Einrichtung von Web Push
 
+- [Coach-M3-Heute](Coach-M3-Heute.md): Startbildschirm, Tageslinie, Rollout und Abnahme
+
 ## Status der Meilensteine
 | Meilenstein | Inhalt | Status |
 |---|---|---|
 | M1 | Datenbasis: Migrationen, Garmin verbinden, Sync, Aufbereitung | umgesetzt, im Review |
-| M2 | Signale, Briefing, Web Push | umgesetzt, im Review |
-| M3 | „Heute“ und Tageslinie | offen |
+| M2 | Signale, Briefing, Web Push | abgenommen |
+| M3 | „Heute“ und Tageslinie | umgesetzt, im Review |
 | M4 | Laufanalyse | offen |
 | M5 | Coach-Chat und Wochenrückblick | offen |
 | M6 | Experimente (optional) | offen |

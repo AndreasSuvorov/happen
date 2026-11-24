@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { supabase, type Profile } from '../lib/supabase'
 import GarminCard from '../components/GarminCard'
 import CoachSettingsCard from '../components/CoachSettingsCard'
-import { cacheBriefing } from '../lib/briefingCache'
+import { cacheToday } from '../lib/today'
 
 export default function Settings({
   profile,
@@ -54,7 +54,7 @@ export default function Settings({
   }
 
   const signOut = () => {
-    cacheBriefing(profile.auth_user_id, null)
+    cacheToday(profile.auth_user_id, null)
     return supabase.auth.signOut()
   }
 
