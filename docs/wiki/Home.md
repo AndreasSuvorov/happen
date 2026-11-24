@@ -11,9 +11,9 @@ Projektdokumentation. Die Seiten sind so benannt, dass sie 1:1 ins GitHub-Wiki �
 ## Status der Meilensteine
 | Meilenstein | Inhalt | Status |
 |---|---|---|
-| M1 | Datenbasis: Migrationen, Garmin verbinden, Sync, Aufbereitung | umgesetzt, im Review |
-| M2 | Signale, Briefing, Web Push | umgesetzt, im Review |
-| M3 | „Heute“ und Tageslinie | offen |
-| M4 | Laufanalyse | offen |
-| M5 | Coach-Chat und Wochenrückblick | offen |
+| M1 | Datenbasis: Migrationen, Garmin verbinden, Sync, Aufbereitung | umgesetzt |
+| M2 | Signale, Briefing, Web Push | umgesetzt |
+| M3 | „Heute“ und Tageslinie | umgesetzt (Coach-Design), Abnahme auf dem iPhone offen |
+| M4 | Laufanalyse | Seite umgesetzt, `analyzeRun` (FIT, Urteil, Pulsreihe) offen |
+| M5 | Coach-Chat und Wochenrückblick | großteils umgesetzt; Antworten in `messages`, Muster im Backend, Plan-Anpassung offen |
 | M6 | Experimente (optional) | offen |
