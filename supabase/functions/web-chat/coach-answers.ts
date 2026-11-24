@@ -231,7 +231,10 @@ export function runAnswer(run: RunRow | null, cap: number, day: string | null): 
     message = `Im Schnitt Puls ${hr}, deine Obergrenze für lockere Läufe ist ${cap}. ` +
       `Wenn es ein lockerer Lauf sein sollte: Stell den Pulsalarm auf ${cap}, dann merkst du es früher.`;
   }
-  const series = Array.isArray(a.hr_series) ? (a.hr_series as unknown[]).filter(isNum) : [];
+  // hr_series kommt als [{ t_min, hr, … }] (Format der Laufanalyse); reine Zahlen gehen auch.
+  const series = Array.isArray(a.hr_series)
+    ? (a.hr_series as unknown[]).map((p) => (isNum(p) ? p : (p as { hr?: unknown } | null)?.hr)).filter(isNum)
+    : [];
   const card: Card = {
     type: "run_card", activity_id: run.external_id, date, title: verdict.title, tone: verdict.tone, detail, hr_cap: cap,
     ...(series.length >= 5 ? { hr: series.slice(0, 120) } : {}),
