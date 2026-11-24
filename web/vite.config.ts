@@ -10,12 +10,15 @@ export default defineConfig({
       strategies: 'injectManifest',
       srcDir: 'src',
       filename: 'sw.js',
+      injectManifest: {
+        globPatterns: ['**/*.{js,css,html,png,svg,webp,woff2,webmanifest}'],
+      },
       manifest: {
         name: 'Happen',
         short_name: 'Happen',
         description: 'Ernährungstagebuch mit ehrlichen Kalorienspannen',
-        theme_color: '#141414',
-        background_color: '#141414',
+        theme_color: '#14231c',
+        background_color: '#14231c',
         display: 'standalone',
         start_url: '/',
         icons: [

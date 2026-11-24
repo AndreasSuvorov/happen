@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { addDays } from '../../../supabase/functions/_shared/garmin/transform.ts'
 import { supabase } from '../lib/supabase'
 import TodayIcon from '../components/TodayIcon'
+import recoveryLandscape from '../assets/recovery-landscape.webp'
 import {
   activityKind, buildTimeline, cacheToday, number, prettyDate, readToday, todayNutrition,
   todayRecovery, wearableSummary, type ContextNote, type PlanAction, type TodayData,
@@ -84,15 +85,17 @@ export default function Today({ authUserId, openSettings, openCapture }: {
   return (
     <div className="screen today-screen">
       <header className="today-heading">
-        <p className="date-heading">{prettyDate(snapshot.date)}</p>
         <h1>Heute</h1>
+        <time className="date-heading" dateTime={snapshot.date}>{prettyDate(snapshot.date)}</time>
       </header>
       {(message || !navigator.onLine) && <p className="muted" role="status">{message || 'Offline · letzter gespeicherter Stand'}</p>}
       <RecoveryCard snapshot={snapshot} openSettings={openSettings} refresh={refresh} />
-      {snapshot.connection && snapshot.briefing?.today && <PlanCard
-        key={snapshot.date} snapshot={snapshot} onChange={(plan_action) => update({ plan_action })}
-      />}
-      <NutritionCard snapshot={snapshot} openCapture={openCapture} />
+      <div className="today-summary">
+        {snapshot.connection && snapshot.briefing?.today && <PlanCard
+          key={snapshot.date} snapshot={snapshot} onChange={(plan_action) => update({ plan_action })}
+        />}
+        <NutritionCard snapshot={snapshot} openCapture={openCapture} />
+      </div>
       <QuestionCard key={`${snapshot.date}:${question?.date ?? ''}`} snapshot={snapshot}
         open={!!pending} onAnswer={(note) => update({ notes: [...snapshot.notes, note] })} />
       <Timeline snapshot={snapshot} />
@@ -148,6 +151,9 @@ function RecoveryCard({ snapshot, openSettings, refresh }: {
 
   return (
     <section className={`recovery-hero recovery-${status}`}>
+      <div className="recovery-landscape" aria-hidden="true">
+        <img src={recoveryLandscape} alt="" fetchPriority="high" />
+      </div>
       <div className="recovery-overview">
         <div className="recovery-title">
           <h2>Erholung</h2>
