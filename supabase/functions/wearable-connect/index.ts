@@ -3,6 +3,7 @@
 //   { action: "connect", apiKey: "...", consent: true }
 //   { action: "disconnect", deleteData: boolean }
 // Der Schlüssel wird nie geloggt, nie in messages gespeichert und nie an ein LLM gegeben.
+import { runAnalysisHook } from "../_shared/run/hook.ts";
 import { db } from "../_shared/db.ts";
 import { authenticate, runInBackground } from "../_shared/auth.ts";
 import { createGarminClient, endpoints, fetchToken, GarminKeyError } from "../_shared/garmin/client.ts";
@@ -119,6 +120,7 @@ Deno.serve(async (req) => {
         store: supabaseStore,
         notify: (uid, text) => notifyUser(uid, text, "garmin_expired"),
         log: (m) => console.error(m),
+        afterActivities: runAnalysisHook(),
       }),
     );
     return json(publicStatus(conn as Connection));

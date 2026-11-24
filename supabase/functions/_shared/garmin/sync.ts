@@ -102,6 +102,11 @@ export interface SyncDeps {
   now?: () => Date;
   client?: ClientOptions;
   log?: (msg: string) => void;
+  /**
+   * Wird nach dem Laden der Aktivitätsdetails aufgerufen (M4: Laufanalyse). Fehler darin brechen den Sync nicht ab.
+   * Rückgabe: Anzahl analysierter Läufe.
+   */
+  afterActivities?: (conn: Connection, client: GarminClient, today: string) => Promise<number>;
 }
 
 export interface SyncResult {
@@ -110,6 +115,7 @@ export interface SyncResult {
   metricsChanged: number;
   activitiesChanged: number;
   backfillDone: boolean;
+  runsAnalyzed?: number;
   error?: string;
 }
 
@@ -218,6 +224,16 @@ export async function syncConnection(conn: Connection, deps: SyncDeps): Promise<
     result.rawChanged += changedDetails.length;
     const detailTouched = await applyActivityDetails(store, conn.user_id, detailRows, stamp);
     result.activitiesChanged = new Set([...touchedActivities, ...detailTouched].map((a) => a.external_id)).size;
+
+    // --- Laufanalyse (M4) ----------------------------------------------------
+    if (deps.afterActivities) {
+      try {
+        result.runsAnalyzed = await deps.afterActivities(conn, client, today);
+      } catch (e) {
+        if (e instanceof GarminKeyError) throw e;
+        deps.log?.(`run analysis failed: ${sanitizeError(e)}`);
+      }
+    }
 
     // --- Tageswerte neu berechnen ------------------------------------------
     const dates = new Set<string>([yesterday, today]);
