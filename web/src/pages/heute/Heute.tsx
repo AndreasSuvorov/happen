@@ -307,7 +307,7 @@ function ExpiredCard({ lastDataAt }: { lastDataAt?: string | null }) {
         Garmin-Verbindung abgelaufen
       </span>
       <span className="t-15">{since} Ein neuer Schlüssel dauert 2 Minuten.</span>
-      <Link to="/onboarding/2" className="heute-warn-link">
+      <Link to="/onboarding/2?erneuern" className="heute-warn-link">
         So erneuerst du ihn
         <Icon name="chevronRight" size={16} strokeWidth={2} />
       </Link>

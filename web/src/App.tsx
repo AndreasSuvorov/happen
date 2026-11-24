@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react'
-import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
+import { useEffect, type ReactNode } from 'react'
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from './lib/useAuth'
 import type { Profile } from './lib/supabase'
 import Login from './pages/Login'
@@ -16,6 +16,7 @@ import Verlauf from './pages/verlauf/Verlauf'
 import Rueckblick from './pages/rueckblick/Rueckblick'
 import Onboarding from './pages/onboarding/Onboarding'
 import Einstellungen from './pages/einstellungen/Einstellungen'
+import { checkOnboardingRemote, needsOnboarding } from './pages/onboarding/state'
 
 /** Bildschirme mit Tab-Leiste unten. */
 function WithTabs() {
@@ -34,7 +35,26 @@ function Plain({ children }: { children?: ReactNode }) {
   return <div className="coach shell">{children ?? <Outlet />}</div>
 }
 
+/** Neue Nutzer einmal ins Onboarding schicken (Ziel noch nicht gesetzt, weder lokal noch in coach_settings). */
+function useOnboardingGate(profile: Profile) {
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
+  useEffect(() => {
+    if (!needsOnboarding(profile) || pathname.startsWith('/onboarding') || pathname.startsWith('/einstellungen')) return
+    let active = true
+    checkOnboardingRemote(profile).then((needed) => {
+      if (active && needed) navigate('/onboarding/1', { replace: true })
+    })
+    return () => {
+      active = false
+    }
+    // Nur beim Start prüfen, nicht bei jedem Seitenwechsel.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile.id])
+}
+
 function CoachRoutes({ profile, refreshProfile }: { profile: Profile; refreshProfile: () => void }) {
+  useOnboardingGate(profile)
   return (
     <Routes>
       <Route element={<WithTabs />}>
