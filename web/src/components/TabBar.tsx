@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import { Icon, type IconName } from './ui'
 import './TabBar.css'
 
@@ -11,10 +11,19 @@ const tabs: { to: string; label: string; icon: IconName }[] = [
 ]
 
 export default function TabBar() {
+  const { pathname } = useLocation()
   return (
     <nav className="tabbar-coach" aria-label="Hauptnavigation">
       {tabs.map((t) => (
-        <NavLink key={t.to} to={t.to} className="tabbar-coach-item">
+        <NavLink
+          key={t.to}
+          to={t.to}
+          className={({ isActive }) =>
+            isActive || (t.to === '/heute' && pathname.startsWith('/tageslinie'))
+              ? 'tabbar-coach-item active'
+              : 'tabbar-coach-item'
+          }
+        >
           <Icon name={t.icon} size={24} />
           {t.label}
         </NavLink>
