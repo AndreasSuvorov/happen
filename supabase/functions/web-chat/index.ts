@@ -10,6 +10,9 @@ import type { SignalDay } from "../_shared/signals.ts";
 import {
   type CoachAnswer, detectIntent, foodAdvice, type Intent, nightAnswer, noteReply, pickRun, runAnswer, type RunRow, weekAnswer,
 } from "./coach-answers.ts";
+import { CoachUnavailable, normalizeTag, runCoachAgent } from "./coach-agent.ts";
+import { looksLikeQuestion } from "./question.ts";
+import { aiEnabled, coachData, countTagThisMonth, createMessage, knownTags, recentTurns } from "./coach-data.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -60,6 +63,13 @@ function base64ToBytes(b64: string): Uint8Array {
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
   return bytes;
+}
+
+/** Antwort am Nachrichten-Datensatz speichern (Verlauf auf allen Geräten, Kontext für den KI-Coach). */
+async function respond(messageId: string, payload: Record<string, unknown>): Promise<Response> {
+  const { error } = await db.from("messages").update({ reply: payload }).eq("id", messageId);
+  if (error) console.warn("reply not saved:", error.message);
+  return Response.json(payload);
 }
 
 function rowsOf<T>(res: { data: unknown; error: { message: string } | null }): T {
@@ -120,17 +130,21 @@ async function answerCoach(user: UserRow, intent: Intent, today: string): Promis
       return foodAdvice(t, tdee ? dailyBudget(tdee, Number(user.goal_kg_per_week), t.runKcal) : null);
     }
     case "note": {
+      let tag = intent.tag;
+      // Freie Antwort ohne erkanntes Stichwort: KI ordnet sie einem festen Stichwort zu („Wasserpfeife“ → Shisha).
+      if (tag === "Sonstiges" && aiEnabled()) {
+        try {
+          tag = (await normalizeTag(createMessage, intent.text, await knownTags(user, today))) ?? tag;
+        } catch (e) {
+          console.warn("normalizeTag failed:", (e as Error).message);
+        }
+      }
       const { error } = await db.from("context_notes").insert({
-        user_id: uid, date: intent.date, tag: intent.tag.toLocaleLowerCase("de-DE"), text: intent.text,
+        user_id: uid, date: intent.date, tag: tag.toLocaleLowerCase("de-DE"), text: intent.text,
         source: intent.answered ? "question" : "chat",
       });
       if (error) throw new Error(error.message);
-      const monthStart = intent.date.slice(0, 8) + "01";
-      const next = new Date(monthStart + "T12:00:00Z");
-      next.setUTCMonth(next.getUTCMonth() + 1);
-      const { count } = await db.from("context_notes").select("id", { count: "exact", head: true }).eq("user_id", uid)
-        .ilike("tag", intent.tag).gte("date", monthStart).lt("date", next.toISOString().slice(0, 10));
-      return { message: noteReply(intent.tag, intent.date, today, count ?? 1), cards: [] };
+      return { message: noteReply(tag, intent.date, today, await countTagThisMonth(uid, tag, intent.date)), cards: [] };
     }
   }
 }
@@ -168,7 +182,24 @@ Deno.serve(async (req) => {
   const coachReply = async (intent: Intent, messageId: string, transcript?: string) => {
     const answer = await answerCoach(user, intent, today);
     await db.from("messages").update({ status: "processed" }).eq("id", messageId);
-    return Response.json({ kind: "coach", intent: intent.kind, transcript, messageId, ...answer });
+    return await respond(messageId, { kind: "coach", intent: intent.kind, transcript, messageId, ...answer });
+  };
+  const localNow = () => new Date().toLocaleString("de-DE", {
+    timeZone: user.timezone, weekday: "long", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit",
+  });
+  /** Freie Frage an den KI-Coach. null = nicht verfügbar (kein Schlüssel, Ablehnung, Fehler). */
+  const agentReply = async (question: string, messageId: string, transcript?: string): Promise<Response | null> => {
+    if (!aiEnabled()) return null;
+    try {
+      const answer = await runCoachAgent(createMessage, coachData(user), {
+        question, today, localNow: localNow(), history: await recentTurns(user, messageId),
+      });
+      await db.from("messages").update({ status: "processed" }).eq("id", messageId);
+      return await respond(messageId, { kind: "coach", intent: "ai", transcript, messageId, ...answer });
+    } catch (e) {
+      console.warn("coach agent unavailable:", e instanceof CoachUnavailable ? e.message : (e as Error).message);
+      return null;
+    }
   };
   if (body.kind === "photo" && !body.imageBase64) return Response.json({ kind: "error", message: "imageBase64 fehlt" }, { status: 400 });
   if (body.kind === "voice" && !body.audioBase64) return Response.json({ kind: "error", message: "audioBase64 fehlt" }, { status: 400 });
@@ -185,6 +216,10 @@ Deno.serve(async (req) => {
     if (body.kind === "text") {
       const intent = detectIntent(text, today, hour, body.noteDate);
       if (intent) return await coachReply(intent, messageId);
+      if (looksLikeQuestion(text)) {
+        const answered = await agentReply(text, messageId);
+        if (answered) return answered;
+      }
     }
 
     let image: { base64: string; mediaType: "image/jpeg" } | undefined;
@@ -202,20 +237,16 @@ Deno.serve(async (req) => {
       await db.from("messages").update({ transcript: input }).eq("id", messageId);
       const intent = detectIntent(input, today, hour, body.noteDate);
       if (intent) return await coachReply(intent, messageId, input);
+      if (looksLikeQuestion(input)) {
+        const answered = await agentReply(input, messageId, input);
+        if (answered) return answered;
+      }
     }
 
     const est = await estimate({
       text: input,
       image,
-      localNow: new Date().toLocaleString("de-DE", {
-        timeZone: user.timezone,
-        weekday: "long",
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+      localNow: localNow(),
       knownMeals: await knownMeals(user),
     });
 
@@ -245,7 +276,7 @@ Deno.serve(async (req) => {
         .select("*")
         .single();
       if (error) throw new Error(error.message);
-      return Response.json({
+      return await respond(messageId, {
         kind: "food",
         messageId,
         transcript: body.kind === "voice" ? input : undefined,
@@ -280,7 +311,7 @@ Deno.serve(async (req) => {
         kcal_gross: kcal,
       });
       if (error) throw new Error(error.message);
-      return Response.json({
+      return await respond(messageId, {
         kind: "activity",
         messageId,
         transcript: body.kind === "voice" ? input : undefined,
@@ -292,7 +323,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    return Response.json({
+    // Weder Mahlzeit noch Training: Text an den KI-Coach geben, sonst die kurze Antwort der Schätzung.
+    if (body.kind !== "photo" && input.trim()) {
+      const answered = await agentReply(input, messageId, body.kind === "voice" ? input : undefined);
+      if (answered) return answered;
+    }
+    return await respond(messageId, {
       kind: "other",
       messageId,
       transcript: body.kind === "voice" ? input : undefined,

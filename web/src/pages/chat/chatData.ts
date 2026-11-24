@@ -50,21 +50,22 @@ interface MessageRow {
     status: string
   }[] | null
   activities: { type: string; distance_km: number | null; duration_min: number | null; kcal_gross: number | null; status: string }[] | null
+  /** Antwort des Coaches, serverseitig gespeichert (web-chat) */
+  reply?: unknown
 }
 
 const activityTitle: Record<string, string> = { run: 'Lauf', walk: 'Spaziergang', bike: 'Radfahren', strength: 'Krafttraining' }
 
 /** Letzte Nachrichten (Web und Telegram) mit erfassten Mahlzeiten und Aktivitäten. */
 export async function loadHistory(limit = 40): Promise<ChatItem[]> {
-  const res = await supabase
-    .from('messages')
-    .select(
-      'id,kind,text,transcript,received_at,status,' +
-        'entries(title,kcal_low,kcal_mid,kcal_high,protein_g,carbs_g,fat_g,note,status),' +
-        'activities(type,distance_km,duration_min,kcal_gross,status)',
-    )
-    .order('received_at', { ascending: false })
-    .limit(limit)
+  const columns =
+    'id,kind,text,transcript,received_at,status,' +
+    'entries(title,kcal_low,kcal_mid,kcal_high,protein_g,carbs_g,fat_g,note,status),' +
+    'activities(type,distance_km,duration_min,kcal_gross,status)'
+  const query = (cols: string) => supabase.from('messages').select(cols).order('received_at', { ascending: false }).limit(limit)
+  // `reply` (gespeicherte Antwort des Coaches) gibt es erst nach der Migration 20261125000000; vorher ohne.
+  let res = await query(columns + ',reply')
+  if (res.error) res = await query(columns)
   if (res.error) throw new Error(res.error.message)
   const replies = readReplies()
   const items: ChatItem[] = []
@@ -73,7 +74,7 @@ export async function loadHistory(limit = 40): Promise<ChatItem[]> {
     const cached = replies[m.id]
     const entry = m.entries?.find((e) => e.status !== 'deleted')
     const activity = m.activities?.find((a) => a.status !== 'deleted')
-    let reply: Reply | null = cached?.reply ?? null
+    let reply: Reply | null = (m.reply as Reply | null | undefined) ?? cached?.reply ?? null
     if (!reply && entry) reply = { kind: 'food', entry }
     if (!reply && activity) {
       reply = {
