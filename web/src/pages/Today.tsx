@@ -253,9 +253,7 @@ function PlanCard({ snapshot, state, openRun, onChange }: {
 
   return (
     <section className="today-card plan-card">
-      <div className="plan-content">
-        <span className="plan-icon"><TodayIcon name="route" /></span>
-        <div><h2>Dein Plan</h2>
+      <h2>Dein Plan</h2>
       {state !== 'red' && run && runSummary && plannedKind !== 'strength' ? (
         <a className="today-run" href={`#garmin-${run.provider}-${run.external_id}`} onClick={(event) => {
           if (run.analysis?.verdict) {
@@ -272,16 +270,14 @@ function PlanCard({ snapshot, state, openRun, onChange }: {
             : runSummary.duration != null && <span>{number(runSummary.duration)} min</span>}
         </a>
       ) : <p className="plan-text">{planText}</p>}
-        </div>
-      </div>
       {state !== 'red' && (action ? <p className="today-confirm" role="status">{action.action === 'move' ? 'Auf morgen verschoben.'
         : action.action === 'other' ? `Notiert: ${action.activity}` : 'Erledigt ✓'}</p>
         : <>{(completed || manualMatch) ? <p className="today-confirm">Erledigt · Aktivität erkannt</p>
           : plannedKind && <div className="today-actions plan-actions">
-            <button className="today-chip" disabled={busy} onClick={() => save('done')}><TodayIcon name="check" size={17} />Erledigt</button>
+            <button className="today-chip" disabled={busy} onClick={() => save('done')}><TodayIcon name="check" size={16} />Erledigt</button>
             {!snapshot.briefing?.deferral && <button className="today-link" disabled={busy} onClick={() => save('move')}>Verschieben</button>}
             <button className="plan-more" disabled={busy}
-              aria-expanded={choosing} onClick={() => setChoosing(!choosing)}><TodayIcon name="more" size={17} />Andere Aktivität</button>
+              aria-expanded={choosing} onClick={() => setChoosing(!choosing)}><TodayIcon name="more" size={16} />Andere Aktivität</button>
           </div>}</>)}
       {state !== 'red' && choosing && <div className="plan-options">
         <p className="muted">Andere Aktivität</p>
@@ -317,8 +313,10 @@ function NutritionCard({ snapshot, openCapture }: { snapshot: TodayData; openCap
               {target && <p className="muted kcal-key"><i aria-hidden="true" />Ziel {number(target.low)}{target.low !== target.high && `–${number(target.high)}`} kcal</p>}
             </div>
             <div className="today-protein">
-              {proteinTarget != null && <span className="protein-ring" style={{ '--progress': `${ring * 360}deg` } as React.CSSProperties} aria-hidden="true" />}
-              <strong>{number(protein)} g</strong>
+              <div className="protein-value">
+                {proteinTarget != null && <span className="protein-ring" style={{ '--progress': `${ring * 360}deg` } as React.CSSProperties} aria-hidden="true" />}
+                <strong>{number(protein)} g</strong>
+              </div>
               <span className="muted">Eiweiß{proteinTarget != null && ` · Richtwert ${proteinTarget} g`}</span>
             </div>
           </div>

@@ -100,7 +100,7 @@ export function todayRecovery(snapshot: TodayData) {
   const explain = state === 'green' && normalHrv && normalPulse
     ? 'Deine HRV liegt im Normalbereich, dein Schlafpuls ist wie sonst.'
     : state === 'green' && hrvAboveRange && normalPulse
-      ? 'Deine HRV liegt über deinem Normalbereich, dein Schlafpuls ist wie sonst.'
+      ? 'Deine HRV liegt über dem Normalbereich, dein Schlafpuls ist wie sonst.'
     : state === 'green' ? 'Deine gemessenen Werte zeigen insgesamt gute Erholung.'
       : state === 'yellow' ? 'Deine Werte sprechen heute für eine leichtere Einheit.'
         : state === 'red' && pattern ? 'Deine Werte weichen deutlich ab. Achte auf Symptome und lass das Training heute aus.'

@@ -16,9 +16,9 @@ const glyphs = {
   note: 'M6 4h12v14H6zM9 8h6m-6 4h6',
 }
 
-export default function TodayIcon({ name, size = 20 }: { name: keyof typeof glyphs; size?: number }) {
+export default function TodayIcon({ name, size = 18 }: { name: keyof typeof glyphs; size?: number }) {
   return <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
+    stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
     <path d={glyphs[name]} />
   </svg>
 }

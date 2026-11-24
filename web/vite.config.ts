@@ -17,8 +17,8 @@ export default defineConfig({
         name: 'Happen',
         short_name: 'Happen',
         description: 'Ernährungstagebuch mit ehrlichen Kalorienspannen',
-        theme_color: '#14231c',
-        background_color: '#14231c',
+        theme_color: '#21231f',
+        background_color: '#21231f',
         display: 'standalone',
         start_url: '/',
         icons: [
