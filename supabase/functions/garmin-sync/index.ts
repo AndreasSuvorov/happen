@@ -4,6 +4,7 @@
 import { authenticate } from "../_shared/auth.ts";
 import { localTime } from "../_shared/nutrition.ts";
 import { RAW_RETENTION_DAYS, syncConnection, type SyncDeps } from "../_shared/garmin/sync.ts";
+import { runAnalysisHook } from "../_shared/run/hook.ts";
 import { connectionFor, deleteOldRaw, dueConnections, hasFeature, notifyUser, supabaseStore } from "../_shared/garmin/store.ts";
 
 const CRON_SECRET = Deno.env.get("CRON_SECRET") ?? "";
@@ -15,6 +16,7 @@ const deps: SyncDeps = {
   store: supabaseStore,
   notify: (uid, text) => notifyUser(uid, text, "garmin_expired"),
   log: (m) => console.error(m),
+  afterActivities: runAnalysisHook(),
 };
 
 /** 04:30 bis 23:30 Ortszeit. */

@@ -1,0 +1,687 @@
+/* Heute, Warum? und Tageslinie. Farben nur über Tokens. */
+
+.heute-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--c-line);
+  background: var(--c-surface);
+  color: var(--c-ink);
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+:where(.coach) a.heute-avatar {
+  color: var(--c-ink);
+}
+
+/* Erholung */
+.heute-status {
+  padding: 8px 4px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.heute-status.tight {
+  gap: 10px;
+}
+
+.heute-status-head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.heute-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.heute-status-word {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.heute-big {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 1.05;
+  letter-spacing: -0.8px;
+}
+
+.heute-muted-p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--c-muted);
+}
+
+.heute-why {
+  height: 44px;
+  padding: 0 10px 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--c-line);
+  background: var(--c-surface);
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  text-decoration: none;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.heute-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.heute-value {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.heute-value b {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.heute-unit {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--c-muted);
+}
+
+.heute-learn {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.heute-learn span {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--c-track);
+}
+
+.heute-learn span.on {
+  background: var(--c-fill);
+}
+
+.heute-secondary-btn {
+  align-self: flex-start;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--c-line);
+  background: var(--c-surface);
+  color: var(--c-accent-text);
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.heute-secondary-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Hinweis „Verbindung abgelaufen“ */
+.heute-warn {
+  background: var(--c-warn-soft);
+  color: var(--c-warn-ink);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.heute-warn-title {
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+:where(.coach) a.heute-warn-link {
+  align-self: flex-start;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--c-warn-ink);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Karten */
+.heute-card-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.3px;
+}
+
+.heute-auto {
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--c-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.heute-plan-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.heute-plan-btn {
+  height: 44px;
+  padding: 0 12px 0 16px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--c-line);
+  background: var(--c-bg);
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.heute-plan-more {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--c-line);
+  background: var(--c-bg);
+  color: var(--c-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.heute-plan-options {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.heute-plan-option {
+  flex: 1;
+  min-height: 44px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--c-line);
+  background: transparent;
+  color: var(--c-accent-text);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.heute-done-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.heute-check {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: var(--c-accent);
+  color: var(--c-accent-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.heute-check.lg {
+  width: 36px;
+  height: 36px;
+}
+
+/* Essen */
+.heute-food {
+  gap: 12px;
+}
+
+.heute-food-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+:where(.coach) a.heute-food-link {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-decoration: none;
+  color: var(--c-ink);
+  min-height: 44px;
+  justify-content: center;
+}
+
+.heute-food-left {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+
+.heute-food-left small {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--c-muted);
+}
+
+:where(.coach) a.heute-add {
+  height: 44px;
+  padding: 0 16px 0 12px;
+  border-radius: 999px;
+  background: var(--c-accent);
+  color: var(--c-accent-ink);
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.heute-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.heute-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.heute-bar-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.heute-bar-label b {
+  font-weight: 600;
+}
+
+.heute-p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+/* Frage */
+.heute-question {
+  background: var(--c-soft);
+  border-radius: var(--radius-card);
+  padding: 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.heute-question > .pad {
+  padding: 0 16px;
+}
+
+.heute-question .chips {
+  margin-top: 8px;
+  padding: 0 16px;
+}
+
+.heute-question-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 0 16px;
+}
+
+.heute-thanks {
+  background: var(--c-soft);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.heute-linie-link {
+  align-self: center !important;
+  gap: 6px !important;
+}
+
+/* Warum? */
+.warum-page {
+  gap: 14px;
+}
+
+.warum-card {
+  gap: 8px;
+}
+
+.warum-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.warum-value {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+.warum-value small {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--c-muted);
+}
+
+.warum-sev {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  padding-top: 2px;
+  color: var(--c-muted);
+  white-space: nowrap;
+}
+
+/* Die Stufe gehört zum Erholungsstatus: gleiche Farbe, immer mit Symbol und Wort */
+.warum-sev.warn {
+  color: var(--c-status-yellow);
+}
+
+.warum-sev.bad {
+  color: var(--c-status-red);
+}
+
+.warum-card .range-bar {
+  height: 8px;
+  border-radius: 4px;
+}
+
+.warum-card .range-bar-band {
+  border-radius: 4px;
+}
+
+.warum-card .range-bar-dot {
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+}
+
+.warum-achten {
+  background: var(--c-soft);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  scroll-margin-top: 72px;
+}
+
+.warum-achten h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+/* Tageslinie */
+.linie-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 20px 10px;
+  border-bottom: 1px solid var(--c-line);
+  background: var(--c-bg);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.linie-top-inner {
+  max-width: 448px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.linie-top-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.linie-head {
+  padding: 18px 20px 0;
+  max-width: 448px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.linie-head h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 1.05;
+  letter-spacing: -0.6px;
+}
+
+.linie-head p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--c-muted);
+}
+
+.linie-body {
+  padding: 10px 16px 24px;
+  max-width: 480px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.linie-day-label {
+  margin: 14px 4px 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+
+.linie-item {
+  display: grid;
+  grid-template-columns: 48px 32px minmax(0, 1fr);
+  column-gap: 10px;
+  align-items: stretch;
+}
+
+.linie-time {
+  font-size: 13px;
+  color: var(--c-muted);
+  padding-top: 14px;
+  text-align: right;
+}
+
+.linie-axis {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.linie-axis::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 15px;
+  width: 2px;
+  background: var(--c-line);
+}
+
+.linie-item.last .linie-axis::before {
+  background: transparent;
+}
+
+.linie-dot {
+  position: relative;
+  margin-top: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--c-surface);
+  color: var(--c-accent-text);
+  border: 1px solid var(--c-line);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.linie-dot.flag {
+  background: var(--c-warn-soft);
+  color: var(--c-warn-ink);
+  border: 0;
+}
+
+.linie-dot.planned {
+  border: 1.5px dashed var(--c-muted);
+  color: var(--c-muted);
+}
+
+.linie-dot.now::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--c-accent);
+}
+
+.linie-text {
+  text-align: left;
+  border: 0;
+  background: transparent;
+  padding: 10px 0 12px;
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  color: var(--c-ink);
+  text-decoration: none;
+  font: inherit;
+}
+
+:where(.coach) a.linie-text {
+  color: var(--c-ink);
+}
+
+.linie-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.linie-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.linie-title.muted {
+  color: var(--c-muted);
+}
+
+.linie-tag {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--c-warn-soft);
+  color: var(--c-warn-ink);
+}
+
+.linie-tag.note {
+  background: var(--c-soft);
+  color: var(--c-accent-text);
+}
+
+.linie-detail {
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--c-muted);
+}
+
+.linie-chev {
+  color: var(--c-muted);
+  margin-left: auto;
+}
+
+.heute-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.heute-metric-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.heute-metric-top b {
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+}

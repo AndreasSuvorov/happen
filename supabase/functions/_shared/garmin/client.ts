@@ -90,6 +90,8 @@ export async function fetchToken(apiKey: string, opts: ClientOptions = {}): Prom
 export interface GarminClient {
   /** GET mit JSON-Antwort. 204/404/leer → null (Daten noch nicht synchronisiert). */
   get(path: string): Promise<unknown | null>;
+  /** GET mit Binärantwort (z. B. FIT-ZIP). 204/404/leer → null. */
+  getBytes(path: string): Promise<Uint8Array | null>;
 }
 
 /**
@@ -105,15 +107,40 @@ export function createGarminClient(
   const base = opts.baseUrl ?? GARMIN_BASE_URL;
   let refreshed = false;
 
-  async function request(path: string, token: string): Promise<Response> {
+  async function request(path: string, token: string, accept = "application/json"): Promise<Response> {
     return await withRetry(
-      () => f(base + path, { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } }),
+      () => f(base + path, { headers: { Authorization: `Bearer ${token}`, Accept: accept } }),
       opts,
       path,
     );
   }
 
+  /** Anfrage mit einmaligem Token-Refresh bei 401; null bei 204/404, Fehler bei anderen Status. */
+  async function send(path: string, accept?: string): Promise<Response | null> {
+    let res = await request(path, await getToken(), accept);
+    if (res.status === 401 && !refreshed) {
+      refreshed = true;
+      await res.body?.cancel();
+      res = await request(path, await refreshToken(), accept);
+    }
+    if (res.status === 204 || res.status === 404) {
+      await res.body?.cancel();
+      return null;
+    }
+    if (!res.ok) {
+      await res.body?.cancel();
+      throw new GarminHttpError(res.status, path);
+    }
+    return res;
+  }
+
   return {
+    async getBytes(path: string) {
+      const res = await send(path, "application/octet-stream, application/zip, */*");
+      if (!res) return null;
+      const bytes = new Uint8Array(await res.arrayBuffer());
+      return bytes.length ? bytes : null;
+    },
     async get(path: string) {
       let res = await request(path, await getToken());
       if (res.status === 401 && !refreshed) {
@@ -154,4 +181,6 @@ export const endpoints = {
   bodyBattery: (from: string, to: string) => `/wellness-service/wellness/bodyBattery/reports/daily?startDate=${from}&endDate=${to}`,
   activities: (start: number, limit: number) => `/activitylist-service/activities/search/activities?start=${start}&limit=${limit}`,
   activity: (id: string) => `/activity-service/activity/${encodeURIComponent(id)}`,
+  /** ZIP mit der Original-FIT-Datei */
+  activityFile: (id: string) => `/download-service/files/activity/${encodeURIComponent(id)}`,
 };

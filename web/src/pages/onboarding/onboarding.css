@@ -1,0 +1,570 @@
+/* Onboarding (Design „Onboarding“, 4 Schritte). Farben nur über Tokens. */
+
+.ob {
+  min-height: 100dvh;
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.ob-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--c-bg);
+  min-height: 60px;
+  padding: calc(8px + env(safe-area-inset-top, 0px)) 12px 0 8px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ob-spacer {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+.ob-icon-btn {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  color: var(--c-accent-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0;
+}
+
+.ob-progress {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.ob-dot {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--c-track);
+  transition: background-color 200ms ease;
+}
+
+.ob-dot[data-on='true'] {
+  background: var(--c-fill);
+}
+
+.ob-skip {
+  height: 44px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--c-muted);
+  font-size: 15px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.ob-main {
+  flex: 1;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.ob-head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ob-lead {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--c-muted);
+}
+
+/* Schritt 1: Ziele */
+.ob-goals {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ob-goal {
+  min-height: 56px;
+  padding: 0 16px;
+  border-radius: 16px;
+  border: 1px solid var(--c-line);
+  background: var(--c-surface);
+  color: var(--c-ink);
+  font-size: 17px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+}
+
+.ob-goal[aria-pressed='true'] {
+  border: 2px solid var(--c-accent);
+  padding: 0 15px;
+  background: var(--c-soft);
+}
+
+.ob-goal-box {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  border: 1.5px solid var(--c-muted);
+  color: var(--c-accent-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.ob-goal[aria-pressed='true'] .ob-goal-box {
+  border: 0;
+  background: var(--c-accent);
+}
+
+.ob-race {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 18px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ob-race-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.ob-race-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ob-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ob-field label {
+  font-size: 13px;
+  color: var(--c-muted);
+}
+
+.ob-input {
+  height: 48px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--c-line);
+  background: var(--c-bg);
+  color: var(--c-ink);
+  /* 16 px verhindert das Hineinzoomen in iOS Safari, optisch wie 15 px im Design */
+  font-size: 16px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ob-input.surface {
+  background: var(--c-surface);
+}
+
+.ob-input::placeholder {
+  color: var(--c-muted);
+  opacity: 0.8;
+}
+
+/* Nummerierte Anleitung */
+.ob-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ob-steps li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: start;
+}
+
+.ob-step-n {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--c-soft);
+  color: var(--c-accent-text);
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ob-step-text {
+  font-size: 15px;
+  line-height: 1.4;
+  padding-top: 3px;
+}
+
+/* Schritt 2: Uhr */
+.ob-ext {
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid var(--c-line);
+  background: var(--c-surface);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--c-accent-text);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.ob-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.ob-consent {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: start;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.ob-consent input {
+  width: 22px;
+  height: 22px;
+  margin: 1px 0 0;
+  accent-color: var(--c-accent);
+}
+
+.ob-connected {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ob-connected p {
+  margin: 0;
+}
+
+.ob-connected-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ob-check {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: var(--c-accent);
+  color: var(--c-accent-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ob-connected-title {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.ob-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--c-track);
+  overflow: hidden;
+}
+
+.ob-bar-fill {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--c-fill);
+  transition: width 400ms ease;
+}
+
+.ob-loading {
+  display: flex;
+  flex-direction: column;
+}
+
+.ob-error {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--c-danger);
+}
+
+/* Schritt 3: Homescreen */
+.ob-phone {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 22px;
+  height: 150px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ob-phone-url {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 18px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--c-track);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 13px;
+  color: var(--c-muted);
+}
+
+.ob-phone-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 56px;
+  border-top: 1px solid var(--c-line);
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: center;
+  justify-items: center;
+  color: var(--c-muted);
+}
+
+.ob-share {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  background: var(--c-soft);
+  outline: 2px solid var(--c-accent);
+  color: var(--c-accent-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: ob-tap 2.4s ease-in-out infinite;
+}
+
+/* Ring, der sich vom Teilen-Knopf löst: „hier tippen“ */
+.ob-share::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 999px;
+  border: 2px solid var(--c-accent);
+  opacity: 0;
+  animation: ob-ring 2.4s ease-out infinite;
+}
+
+@keyframes ob-tap {
+  0%,
+  70%,
+  100% {
+    transform: scale(1);
+  }
+  78% {
+    transform: scale(0.9);
+  }
+  86% {
+    transform: scale(1.04);
+  }
+}
+
+@keyframes ob-ring {
+  0%,
+  75% {
+    transform: scale(1);
+    opacity: 0;
+  }
+  80% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* Schritt 4: Mitteilungen */
+.ob-notif {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 20px;
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  column-gap: 10px;
+  align-items: start;
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--c-ink) 8%, transparent);
+}
+
+.ob-notif-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--c-accent);
+  color: var(--c-accent-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ob-notif-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.ob-notif-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--c-muted);
+}
+
+.ob-notif-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.ob-notif-text {
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.ob-channel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ob-note {
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Segment-Schalter (auch in den Einstellungen genutzt) */
+.ob-seg {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--c-track);
+}
+
+.ob-seg button {
+  min-height: 44px;
+  border-radius: 10px;
+  border: 0;
+  background: transparent;
+  color: var(--c-muted);
+  font-size: 15px;
+  font-weight: 500;
+  padding: 0 6px;
+}
+
+.ob-seg button[aria-pressed='true'] {
+  background: var(--c-surface);
+  color: var(--c-ink);
+  font-weight: 600;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--c-ink) 12%, transparent);
+}
+
+.ob-seg button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Unten: Hauptknopf */
+.ob-footer {
+  position: sticky;
+  bottom: 0;
+  background: var(--c-bg);
+  padding: 12px 20px max(32px, calc(12px + env(safe-area-inset-bottom, 0px)));
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ob-footer .ob-error {
+  padding-bottom: 8px;
+}
+
+.ob-primary {
+  height: 52px;
+  border-radius: 14px;
+  border: 0;
+  background: var(--c-accent);
+  color: var(--c-accent-ink);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.ob-primary:disabled {
+  background: var(--c-track);
+  color: var(--c-muted);
+  cursor: default;
+}
+
+.ob-secondary {
+  height: 44px;
+  border: 0;
+  background: transparent;
+  color: var(--c-muted);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ob-share,
+  .ob-share::after {
+    animation: none;
+  }
+  .ob-dot,
+  .ob-bar-fill {
+    transition: none;
+  }
+}
