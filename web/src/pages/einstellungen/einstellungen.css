@@ -1,0 +1,359 @@
+/* Einstellungen (Design „Einstellungen“). Farben nur über Tokens. */
+
+.st {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: env(safe-area-inset-top, 0px) var(--gutter) calc(40px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.st-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--c-bg);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 56px;
+  margin: 0 -8px;
+}
+
+.st-back {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c-accent-text);
+  border-radius: 999px;
+}
+
+.st-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.st-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.st-group-title {
+  margin: 0;
+  padding: 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+
+.st-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.st-card > * + * {
+  border-top: 1px solid var(--c-line);
+}
+
+.st-note {
+  margin: 0;
+  padding: 0 4px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--c-muted);
+}
+
+/* Zeile mit Wert und Pfeil */
+.st-row {
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 14px 10px 16px;
+  border: 0;
+  background: transparent;
+  color: var(--c-ink);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+  text-decoration: none;
+  box-sizing: border-box;
+  font-size: 15px;
+}
+
+:where(.coach) a.st-row {
+  color: var(--c-ink);
+}
+
+.st-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.st-row-label {
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.st-row-sub {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--c-muted);
+}
+
+.st-row-value {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  font-size: 15px;
+  color: var(--c-muted);
+  text-align: right;
+  max-width: 55%;
+}
+
+.st-row.danger .st-row-label,
+:where(.coach) a.st-row.danger .st-row-label {
+  color: var(--c-danger);
+  font-weight: 600;
+}
+
+.st-row.strong .st-row-label {
+  color: var(--c-accent-text);
+  font-weight: 600;
+}
+
+.st-row.warn .st-row-value {
+  color: var(--c-warn);
+  font-weight: 600;
+}
+
+.st-row:disabled {
+  cursor: default;
+}
+
+/* Segment-Schalter */
+.st-seg-row {
+  padding: 12px 14px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.st-seg {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--c-track);
+}
+
+.st-seg button {
+  min-height: 44px;
+  border-radius: 9px;
+  border: 0;
+  background: transparent;
+  color: var(--c-muted);
+  font-size: 15px;
+  font-weight: 500;
+  padding: 0 2px;
+}
+
+.st-seg button[aria-pressed='true'] {
+  background: var(--c-surface);
+  color: var(--c-ink);
+  font-weight: 600;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--c-ink) 12%, transparent);
+}
+
+.st-seg button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Schalter */
+.st-switch-row {
+  width: 100%;
+  min-height: 56px;
+  padding: 10px 14px 10px 16px;
+  border: 0;
+  background: transparent;
+  color: var(--c-ink);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+}
+
+.st-switch-row:disabled {
+  cursor: default;
+}
+
+.st-switch-row:disabled .st-switch {
+  opacity: 0.5;
+}
+
+.st-switch {
+  width: 50px;
+  height: 30px;
+  border-radius: 999px;
+  background: var(--c-track);
+  position: relative;
+  flex-shrink: 0;
+  transition: background-color 160ms ease;
+}
+
+.st-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  /* Im Design in hell und dunkel weiß */
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: left 160ms ease;
+}
+
+.st-switch-row[aria-pressed='true'] .st-switch {
+  background: var(--c-accent);
+}
+
+.st-switch-row[aria-pressed='true'] .st-knob {
+  left: 23px;
+}
+
+/* Hinweis: Mitteilungen gesperrt */
+.st-warn {
+  background: var(--c-warn-soft);
+  color: var(--c-warn-ink);
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.st-warn-title {
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.st-warn-text {
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.st-error {
+  margin: 0;
+  padding: 0 4px;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--c-danger);
+}
+
+/* Sheets */
+.st-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.st-sheet-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.4px;
+}
+
+.st-sheet-hint {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--c-muted);
+}
+
+.st-sheet-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.st-sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.st-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--c-muted);
+}
+
+.st-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.st-input-wrap .input {
+  color: var(--c-ink);
+}
+
+.st-suffix {
+  position: absolute;
+  right: 14px;
+  font-size: 15px;
+  color: var(--c-muted);
+  pointer-events: none;
+}
+
+.st-save {
+  min-height: 52px;
+  font-size: 17px;
+}
+
+.st-danger-btn {
+  color: var(--c-danger);
+}
+
+.st-code {
+  display: block;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  font-size: 17px;
+  user-select: all;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .st-switch,
+  .st-knob {
+    transition: none;
+  }
+}
