@@ -1,0 +1,300 @@
+/* Verlauf: Woche, Trends, Muster */
+.vl-page {
+  gap: 14px;
+}
+
+.vl-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 0 4px;
+}
+
+.vl-header .link-arrow {
+  align-self: center;
+}
+
+.vl-segments {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--c-track);
+}
+
+.vl-segments button {
+  min-height: 44px;
+  border-radius: 10px;
+  border: 0;
+  background: transparent;
+  color: var(--c-muted);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.vl-segments button[aria-pressed='true'] {
+  background: var(--c-surface);
+  color: var(--c-ink);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.vl-stack-16 {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.vl-stack-12 {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Woche */
+.vl-week {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vl-week-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0 4px;
+}
+
+.vl-week-head h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.vl-table {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.vl-row {
+  display: grid;
+  grid-template-columns: 20px 62px repeat(3, minmax(0, 1fr)) 18px;
+  column-gap: 8px;
+  align-items: center;
+  padding: 0 14px;
+  min-height: 48px;
+  border-top: 1px solid var(--c-line);
+  font-size: 15px;
+  text-decoration: none;
+  color: var(--c-ink);
+}
+
+:where(.coach) a.vl-row {
+  color: var(--c-ink);
+}
+
+.vl-row.is-today {
+  background: var(--c-soft);
+}
+
+.vl-row .skeleton {
+  min-height: 14px;
+  margin-right: 12px;
+}
+
+.vl-row-head {
+  min-height: 0;
+  padding: 8px 14px 6px;
+  border-top: 0;
+  font-size: 12px;
+  color: var(--c-muted);
+}
+
+.vl-cell-icon {
+  display: flex;
+  align-items: center;
+}
+
+.vl-day {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.vl-day .t-muted {
+  font-weight: 400;
+}
+
+.vl-train {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.vl-accent {
+  color: var(--c-accent-text);
+  flex-shrink: 0;
+}
+
+.vl-weeknav {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.vl-weeknav .btn {
+  border: 0;
+  background: transparent;
+  padding: 0 4px;
+}
+
+.vl-foot {
+  margin: 0;
+  padding: 0 4px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--c-muted);
+}
+
+/* Trends */
+.vl-chart-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vl-chart-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.vl-chart-head h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.vl-big {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+.vl-big-sub {
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.vl-note {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.vl-chart {
+  position: relative;
+  padding-top: 0;
+}
+
+.vl-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  touch-action: pan-y;
+  cursor: crosshair;
+}
+
+.vl-tip {
+  position: absolute;
+  top: -30px;
+  z-index: 1;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: var(--c-ink);
+  color: var(--c-bg);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Muster */
+.vl-intro {
+  margin: 0;
+  padding: 0 4px;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--c-muted);
+}
+
+.vl-pattern {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vl-pattern.is-thin {
+  background: transparent;
+  border-style: dashed;
+}
+
+.vl-pattern.is-thin h2 {
+  color: var(--c-muted);
+}
+
+.vl-pattern h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.vl-pattern p {
+  margin: 0;
+}
+
+.vl-pattern-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.vl-count {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--c-track);
+  color: var(--c-ink);
+}
+
+.vl-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.vl-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.vl-stat-v {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
