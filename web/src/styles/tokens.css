@@ -1,0 +1,74 @@
+/* Design-Tokens aus dem Canvas „happen Coach“. Hell ist Standard, dunkel folgt dem System. */
+:root {
+  --c-bg: #f3f0e7;
+  --c-surface: #fbf9f3;
+  --c-line: #e0d9c8;
+  --c-ink: #1d2620;
+  --c-muted: #56605a;
+  --c-soft: #e4ebe1;
+  --c-accent: #2c5a3c;
+  --c-accent-ink: #ffffff;
+  --c-accent-text: #2c5a3c;
+  --c-track: #e6e1d4;
+  --c-fill: #2c5a3c;
+  --c-band: #bfd0ba;
+  --c-warn: #a9561a;
+  --c-warn-soft: #f6e5d3;
+  --c-warn-ink: #6b3a10;
+  --c-danger: #a8452a;
+  --c-scrim: rgba(20, 26, 22, 0.45);
+  --c-hero: #1f3628;
+
+  /* Statusfarben: nur für den Erholungsstatus, immer mit Symbol und Wort */
+  --c-status-green: #3e7b4f;
+  --c-status-yellow: #946812;
+  --c-status-red: #a8452a;
+
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-body: Figtree, system-ui, sans-serif;
+
+  --radius-card: 18px;
+  --radius-btn: 12px;
+  --tabbar-h: 80px;
+  --gutter: 16px;
+
+  /* Alte Namen, damit bestehende Seiten (Login, Einstellungen) die neuen Farben bekommen */
+  --bg: var(--c-bg);
+  --surface: var(--c-surface);
+  --border: var(--c-line);
+  --text: var(--c-ink);
+  --muted: var(--c-muted);
+  --accent: var(--c-accent);
+  --error: var(--c-danger);
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --c-bg: #111612;
+    --c-surface: #1a201b;
+    --c-line: #2b342d;
+    --c-ink: #ece8dd;
+    --c-muted: #a6afa4;
+    --c-soft: #1d2a21;
+    --c-accent: #8fc29e;
+    --c-accent-ink: #0f1a12;
+    --c-accent-text: #9fd0ad;
+    --c-track: #2a322b;
+    --c-fill: #8fc29e;
+    --c-band: #3d5c46;
+    --c-warn: #e8a062;
+    --c-warn-soft: #3a2719;
+    --c-warn-ink: #f2c9a8;
+    --c-danger: #f3a890;
+    --c-scrim: rgba(0, 0, 0, 0.6);
+    --c-hero: #17261c;
+
+    --c-status-green: #86d29a;
+    --c-status-yellow: #f2c66b;
+    --c-status-red: #f3a890;
+
+    color-scheme: dark;
+  }
+}

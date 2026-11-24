@@ -1,0 +1,475 @@
+/* Gemeinsame Bausteine für alle Coach-Screens. Bereichsspezifisches gehört in die CSS-Datei des Bereichs. */
+
+.coach {
+  background: var(--c-bg);
+  color: var(--c-ink);
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+:where(.coach) a {
+  color: var(--c-accent-text);
+}
+
+:where(.coach) button,
+:where(.coach) input,
+:where(.coach) textarea,
+:where(.coach) select {
+  font-family: inherit;
+}
+
+:where(.coach) button {
+  cursor: pointer;
+}
+
+:where(.coach) :focus-visible {
+  outline: 2px solid var(--c-accent-text);
+  outline-offset: 2px;
+}
+
+/* Bildschirm mit Tab-Leiste: scrollt selbst, lässt unten Platz für die Leiste */
+.shell {
+  min-height: 100dvh;
+}
+
+.shell-main {
+  padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
+}
+
+.page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: calc(12px + env(safe-area-inset-top, 0px)) var(--gutter) 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 0 4px;
+}
+
+.page-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 1.1;
+  letter-spacing: -0.8px;
+}
+
+.page-title.small {
+  font-size: 22px;
+  line-height: 1.2;
+  letter-spacing: -0.4px;
+}
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+.t-muted {
+  color: var(--c-muted);
+}
+
+.t-13 {
+  font-size: 13px;
+}
+
+.t-12 {
+  font-size: 12px;
+}
+
+.t-15 {
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.kicker {
+  font-size: 13px;
+  color: var(--c-muted);
+}
+
+.card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card.soft {
+  background: var(--c-soft);
+  border-color: transparent;
+}
+
+.card.warn {
+  background: var(--c-warn-soft);
+  color: var(--c-warn-ink);
+  border-color: transparent;
+}
+
+.card.flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+.card p {
+  margin: 0;
+}
+
+.section-title {
+  margin: 0;
+  padding: 0 4px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+/* Knöpfe: mindestens 44 px hoch */
+.btn {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--c-line);
+  background: var(--c-surface);
+  color: var(--c-accent-text);
+  font-size: 15px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.btn.primary {
+  background: var(--c-accent);
+  border-color: transparent;
+  color: var(--c-accent-ink);
+}
+
+.btn.ghost {
+  background: transparent;
+}
+
+.btn.pill {
+  border-radius: 999px;
+}
+
+.btn.icon {
+  width: 44px;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.btn.block {
+  width: 100%;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* Textlink mit Pfeil */
+.link-arrow {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  align-self: flex-start;
+  color: var(--c-accent-text);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+/* Chips: Antworten mit einem Tipp */
+.chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.chips.wrap {
+  flex-wrap: wrap;
+  overflow: visible;
+}
+
+.chips.bleed {
+  margin: 0 calc(-1 * var(--gutter));
+  padding: 0 var(--gutter);
+}
+
+.chip {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--c-line);
+  background: var(--c-surface);
+  color: var(--c-ink);
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chip[aria-pressed='true'] {
+  background: var(--c-accent);
+  border-color: transparent;
+  color: var(--c-accent-ink);
+}
+
+.chip.accent-text {
+  color: var(--c-accent-text);
+}
+
+/* Kennzahl gegen Normalbereich: blasses Band, Punkt für heute */
+.range-bar {
+  position: relative;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--c-track);
+}
+
+.range-bar-band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 3px;
+  background: var(--c-band);
+}
+
+.range-bar-dot {
+  position: absolute;
+  top: -3px;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border-radius: 999px;
+  background: var(--c-ink);
+  border: 2px solid var(--c-bg);
+  box-sizing: border-box;
+}
+
+.card .range-bar-dot {
+  border-color: var(--c-surface);
+}
+
+/* Spannen-Balken: fester Teil + weicher Übergang für die Unsicherheit */
+.span-bar {
+  position: relative;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--c-track);
+  overflow: hidden;
+}
+
+.span-bar-solid {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: var(--c-fill);
+  border-radius: 4px;
+}
+
+.span-bar-fuzz {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, var(--c-fill), var(--c-track));
+}
+
+.span-bar-target {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--c-band);
+}
+
+/* Listenzeilen in einer Karte */
+.rows > * + * {
+  border-top: 1px solid var(--c-line);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  column-gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  min-height: 44px;
+  color: var(--c-ink);
+  text-decoration: none;
+}
+
+.icon-tile {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--c-soft);
+  color: var(--c-accent-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.icon-tile.sm {
+  width: 36px;
+  height: 36px;
+}
+
+/* Kleine Kacheln mit einer Zahl */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.tile {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 14px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tile-value {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+/* Oberer Balken mit Zurück auf Unterseiten */
+.subbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--c-bg);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: calc(8px + env(safe-area-inset-top, 0px)) 8px 8px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.subbar-title {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+/* Bestätigung nach einem Tipp: kurze Animation, respektiert reduzierte Bewegung */
+@keyframes pop-in {
+  from {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.pop-in {
+  animation: pop-in 220ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pop-in {
+    animation: none;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Bottom-Sheet (z. B. Mahlzeit erfassen) */
+.sheet-scrim {
+  position: fixed;
+  inset: 0;
+  background: var(--c-scrim);
+  z-index: 20;
+  border: 0;
+}
+
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 21;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--c-bg);
+  color: var(--c-ink);
+  border-radius: 28px 28px 0 0;
+  padding: 8px var(--gutter) calc(28px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 92dvh;
+  overflow-y: auto;
+}
+
+.sheet-grip {
+  align-self: center;
+  width: 40px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--c-line);
+}
+
+.input {
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid var(--c-line);
+  background: var(--c-surface);
+  color: var(--c-ink);
+  font-size: 16px;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
+
+.empty {
+  padding: 24px 8px;
+  text-align: center;
+  color: var(--c-muted);
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.skeleton {
+  background: var(--c-track);
+  border-radius: 8px;
+  min-height: 16px;
+}

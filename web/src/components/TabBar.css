@@ -1,0 +1,33 @@
+.tabbar-coach {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  height: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
+  padding: 8px max(0px, calc((100vw - 480px) / 2)) env(safe-area-inset-bottom, 0px);
+  box-sizing: border-box;
+  background: var(--c-surface);
+  border-top: 1px solid var(--c-line);
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: start;
+  font-family: var(--font-body);
+}
+
+.tabbar-coach-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-height: 44px;
+  text-decoration: none;
+  color: var(--c-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.tabbar-coach-item.active {
+  color: var(--c-accent-text);
+  font-weight: 600;
+}
