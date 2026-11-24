@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard'
 import Chat from './pages/Chat'
 import Settings from './pages/Settings'
 import Today from './pages/Today'
+import TodayIcon from './components/TodayIcon'
 
 export default function App() {
   const { session, profile, loading, refreshProfile } = useAuth()
@@ -24,9 +25,9 @@ export default function App() {
   return (
     <div className="app today-app">
       <header className="topbar today-topbar">
-        <strong>Happen</strong>
+        <strong className="today-wordmark">happen<span aria-hidden="true">.</span></strong>
         {currentProfile && <button className="today-profile" aria-label="Einstellungen" onClick={() => setTab('settings')}>
-          {currentProfile.first_name?.trim().charAt(0).toLocaleUpperCase('de-DE') || '⚙'}
+          {currentProfile.first_name?.trim().charAt(0).toLocaleUpperCase('de-DE') || <TodayIcon name="person" size={19} />}
         </button>}
       </header>
       <main className={activeTab === 'chat' ? 'main-flush' : undefined}>
@@ -37,10 +38,10 @@ export default function App() {
         {currentProfile && activeTab === 'settings' && <Settings profile={currentProfile} onProfileSaved={refreshProfile} />}
       </main>
       <nav className="tabbar today-tabbar" aria-label="Hauptnavigation">
-        <button aria-current={activeTab === 'today' ? 'page' : undefined} onClick={goToday}>Heute</button>
-        <button className="today-add" aria-label="Mahlzeit erfassen" onClick={() => openChat(true)} disabled={!currentProfile}>+</button>
-        <button aria-current={activeTab === 'chat' ? 'page' : undefined} onClick={() => openChat(false)} disabled={!currentProfile}>Chat</button>
-        <button aria-current={activeTab === 'history' ? 'page' : undefined} onClick={() => setTab('history')} disabled={!currentProfile}>Verlauf</button>
+        <button aria-current={activeTab === 'today' ? 'page' : undefined} onClick={goToday}><TodayIcon name="sun" /><span>Heute</span></button>
+        <button className="today-add" aria-label="Mahlzeit erfassen" onClick={() => openChat(true)} disabled={!currentProfile}><TodayIcon name="plus" size={25} /></button>
+        <button aria-current={activeTab === 'chat' ? 'page' : undefined} onClick={() => openChat(false)} disabled={!currentProfile}><TodayIcon name="chat" /><span>Chat</span></button>
+        <button aria-current={activeTab === 'history' ? 'page' : undefined} onClick={() => setTab('history')} disabled={!currentProfile}><TodayIcon name="history" /><span>Verlauf</span></button>
       </nav>
     </div>
   )

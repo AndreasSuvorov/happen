@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { addDays } from '../../../supabase/functions/_shared/garmin/transform.ts'
 import { supabase } from '../lib/supabase'
+import TodayIcon from '../components/TodayIcon'
 import {
   activityKind, buildTimeline, cacheToday, number, prettyDate, readToday, todayNutrition,
   todayRecovery, wearableSummary, type ContextNote, type PlanAction, type TodayData,
 } from '../lib/today'
 
-const recoveryLabels = { green: ['●', 'Gut erholt'], yellow: ['◐', 'Etwas müde'],
-  red: ['○', 'Heute schonen'], unknown: ['◌', 'Erholung noch offen'] } as const
+const recoveryLabels = { green: 'Gut erholt', yellow: 'Etwas müde',
+  red: 'Heute schonen', unknown: 'Erholung noch offen' } as const
+const recoveryIcons = { green: 'pulse', yellow: 'moon', red: 'rest', unknown: 'more' } as const
 const otherActivities = ['Krafttraining', 'Radfahren', 'Spaziergang', 'Laufen', 'Schwimmen', 'Sonstiges']
 
 export default function Today({ authUserId, openSettings, openCapture }: {
@@ -105,7 +107,7 @@ function RecoveryCard({ snapshot, openSettings, refresh }: {
   const [feedback, setFeedback] = useState('')
   const why = useRef<HTMLDialogElement>(null)
   const { day, status, days, metrics } = todayRecovery(snapshot)
-  const [symbol, label] = recoveryLabels[status]
+  const label = recoveryLabels[status]
   const { connection, garmin } = snapshot
   if (!connection) return (
     <section className="card today-card">
@@ -139,28 +141,38 @@ function RecoveryCard({ snapshot, openSettings, refresh }: {
     }
   }
   const needsNight = !day?.sleep_end_local || day.sleep_uncertain || day.hrv_last_night == null
-  const comparisons = metrics.flatMap(({ label, value, unit, baseline }) => baseline ? [
-    `${label} ${number(value)} ${unit} (normal ${number(baseline.low)}${baseline.high !== baseline.low ? '–' + number(baseline.high) : ''})`,
-  ] : []).slice(0, 2)
+  const comparisons = metrics.filter((metric) => metric.baseline).slice(0, 2)
   const description = needsNight ? 'Deine Nacht ist noch nicht da. Öffne kurz Garmin Connect auf dem Handy.'
     : days < 10 ? `Ich lerne dich noch kennen (Tag ${days} von 10).`
-      : comparisons.join(' · ') || snapshot.briefing?.why || 'Für heute fehlen vergleichbare Werte.'
+      : comparisons.length ? '' : snapshot.briefing?.why || 'Für heute fehlen vergleichbare Werte.'
 
   return (
-    <section className="card today-card">
-      <h2>Erholung</h2>
-      <strong className={`recovery-status recovery-${status}`}>
-        <span aria-hidden="true">{symbol}</span> {label}
-      </strong>
-      <p>{description}</p>
-      {connection.backfill && days < 10 && <p className="muted">Ich lade deine letzten vier Wochen.</p>}
-      <div className="today-actions">
-        {metrics.length > 0 && <button className="today-link" onClick={() => why.current?.showModal()}>Warum?</button>}
-        <button className="today-link" onClick={sync} disabled={syncing || !navigator.onLine}>
-          {syncing ? 'Prüft …' : 'Nochmal prüfen'}
+    <section className={`recovery-hero recovery-${status}`}>
+      <div className="recovery-overview">
+        <div className="recovery-title">
+          <h2>Erholung</h2>
+          <strong>{label}</strong>
+        </div>
+        <div className="recovery-orbit" aria-hidden="true"><TodayIcon name={recoveryIcons[status]} size={31} /></div>
+      </div>
+      {description && <p className="recovery-description">{description}</p>}
+      {!description && <div className="recovery-metrics">
+        {comparisons.map(({ id, label, value, unit, baseline }) => baseline && (
+          <div key={id}>
+            <span>{label}</span>
+            <strong>{number(value)} <small>{unit}</small></strong>
+            <small>Normal {number(baseline.low)}{baseline.high !== baseline.low && '–' + number(baseline.high)}</small>
+          </div>
+        ))}
+      </div>}
+      {connection.backfill && days < 10 && <p className="recovery-description">Ich lade deine letzten vier Wochen.</p>}
+      <div className="recovery-actions">
+        {metrics.length > 0 && <button onClick={() => why.current?.showModal()}>Warum? <TodayIcon name="chevron" size={15} /></button>}
+        <button onClick={sync} disabled={syncing || !navigator.onLine}>
+          <TodayIcon name="sync" size={15} /> {syncing ? 'Prüft …' : 'Nochmal prüfen'}
         </button>
       </div>
-      {feedback && <p className="muted" role="status">{feedback}</p>}
+      {feedback && <p className="recovery-description" role="status">{feedback}</p>}
       <dialog ref={why} className="today-dialog" aria-labelledby="why-heading">
         <form method="dialog" className="dialog-heading">
           <h2 id="why-heading">Warum {label.toLowerCase()}?</h2>
@@ -220,8 +232,10 @@ function PlanCard({ snapshot, onChange }: { snapshot: TodayData; onChange: (acti
   }
 
   return (
-    <section className="card today-card">
-      <h2>Dein Plan für heute</h2>
+    <section className="today-card plan-card">
+      <div className="plan-content">
+        <span className="plan-icon"><TodayIcon name="route" /></span>
+        <div><h2>Dein Plan</h2>
       {run && runSummary && plannedKind !== 'strength' ? (
         <a className="today-run" href={`#garmin-${run.provider}-${run.external_id}`} onClick={() => {
           const item = document.getElementById(`garmin-${run.provider}-${run.external_id}`)
@@ -231,17 +245,23 @@ function PlanCard({ snapshot, onChange }: { snapshot: TodayData; onChange: (acti
           {runSummary.duration != null && <span>{number(runSummary.duration)} min</span>}
         </a>
       ) : <p className="plan-text">{plan.text}</p>}
+        </div>
+      </div>
       {action ? <p className="today-confirm" role="status">{action.action === 'move' ? 'Auf morgen verschoben.'
         : action.action === 'other' ? `Notiert: ${action.activity}` : 'Erledigt ✓'}</p>
         : <>{(completed || manualMatch) ? <p className="today-confirm">Erledigt · Aktivität erkannt</p>
           : plannedKind && <div className="today-actions plan-actions">
-            <button className="today-link" disabled={busy} onClick={() => save('done')}>Erledigt</button>
+            <button className="today-chip" disabled={busy} onClick={() => save('done')}><TodayIcon name="check" size={17} />Erledigt</button>
             {!snapshot.briefing?.deferral && <button className="today-link" disabled={busy} onClick={() => save('move')}>Verschieben</button>}
-            <button className="today-link" disabled={busy} aria-expanded={choosing} onClick={() => setChoosing(!choosing)}>Hab was anderes gemacht</button>
+            <button className="plan-more" aria-label="Hab was anderes gemacht" title="Hab was anderes gemacht" disabled={busy}
+              aria-expanded={choosing} onClick={() => setChoosing(!choosing)}><TodayIcon name="more" size={22} /></button>
           </div>}</>}
-      {choosing && <div className="today-actions">
-        {otherActivities.map((activity) => <button key={activity} className="today-chip" disabled={busy}
-          onClick={() => save('other', activity)}>{activity}</button>)}
+      {choosing && <div className="plan-options">
+        <p className="muted">Andere Aktivität</p>
+        <div className="today-actions">
+          {otherActivities.map((activity) => <button key={activity} className="today-chip" disabled={busy}
+            onClick={() => save('other', activity)}>{activity}</button>)}
+        </div>
       </div>}
       {error && <p className="error" role="alert">{error}</p>}
     </section>
@@ -254,25 +274,31 @@ function NutritionCard({ snapshot, openCapture }: { snapshot: TodayData; openCap
   const percent = (n: number) => `${100 * n / max}%`
   const ring = Math.min(1, protein / (proteinTarget || 1))
   return (
-    <section className="card today-card">
+    <section className="today-card nutrition-card">
       <h2>Essen heute</h2>
       {!count ? <button className="today-link" onClick={openCapture}>Erste Mahlzeit eintragen</button> : (
         <>
-          <div className="today-energy"><strong>{number(low)}–{number(high)}</strong> <span>kcal erfasst</span></div>
-          <div className="today-meter" aria-hidden="true">
-            {target && <i className="meter-target" style={{ left: percent(target.low), width: percent(target.high - target.low) }} />}
-            <i className="meter-intake" style={{ left: percent(low), width: percent(high - low) }} />
-          </div>
-          {target && <p className="muted">Tagesziel {number(target.low)}{target.low !== target.high && `–${number(target.high)}`} kcal</p>}
-          <div className="today-protein">
-            {proteinTarget != null && <span className="protein-ring" style={{ '--progress': `${ring * 360}deg` } as React.CSSProperties} aria-hidden="true" />}
-            <span><strong>{number(protein)} g</strong> Eiweiß{proteinTarget != null && <span className="muted"> · Richtwert {proteinTarget} g</span>}</span>
+          <div className="nutrition-grid">
+            <div>
+              <div className="today-energy"><strong>{number(low)}–{number(high)}</strong> <span>kcal</span></div>
+              <div className="today-meter" aria-hidden="true">
+                {target && <i className="meter-target" style={{ left: percent(target.low), width: percent(target.high - target.low) }} />}
+                <i className="meter-intake" style={{ left: percent(low), width: percent(high - low) }} />
+              </div>
+              {target && <p className="muted">Ziel {number(target.low)}{target.low !== target.high && `–${number(target.high)}`} kcal</p>}
+            </div>
+            <div className="today-protein">
+              {proteinTarget != null && <span className="protein-ring" style={{ '--progress': `${ring * 360}deg` } as React.CSSProperties} aria-hidden="true" />}
+              <strong>{number(protein)} g</strong>
+              <span className="muted">Eiweiß{proteinTarget != null && ` · Richtwert ${proteinTarget} g`}</span>
+            </div>
           </div>
           {snapshot.briefing?.food && !snapshot.briefing.food.startsWith('Für gestern') && <p className="muted">{snapshot.briefing.food}</p>}
         </>
       )}
       {snapshot.briefing?.weigh && snapshot.weight?.date !== snapshot.date && <p className="muted">Ab halb acht kannst du dich kurz wiegen.</p>}
     </section>
+
   )
 }
 
@@ -306,11 +332,11 @@ function QuestionCard({ snapshot, open, onAnswer }: { snapshot: TodayData; open:
   }
 
   return (
-    <section className="card today-card" aria-label="Coach-Rückfrage">
+    <section className="today-card question-card" aria-label="Coach-Rückfrage">
       {noted ? <p className="today-confirm" role="status">Notiert ✓</p> : <>
         <h2>Eine Frage</h2>
-        <p>{question.text}</p>
-        <div className="today-actions">
+        <p className="question-text">{question.text}</p>
+        <div className="today-actions question-options">
           {question.options.map((option) => <button className="today-chip" disabled={busy} key={option}
             onClick={() => option === 'Andere…' ? setCustom(true) : answer(option)}>{option}</button>)}
         </div>
@@ -342,12 +368,13 @@ function Timeline({ snapshot }: { snapshot: TodayData }) {
                 const facts = event.facts.filter(Boolean)
                 const line = <>
                   <span className="timeline-time">{event.time || '—'}</span>
-                  <span className="timeline-icon" aria-hidden="true">{event.icon}</span>
+                  <span className="timeline-icon" aria-hidden="true"><TodayIcon name={event.icon === '☾' ? 'moon' : event.icon === '☀' ? 'sun'
+                    : event.icon === '◈' ? 'meal' : event.icon === '·' ? 'note' : 'pulse'} size={16} /></span>
                   <span className="timeline-label"><strong>{event.title}</strong>{event.summary && <span className="muted">{event.summary}</span>}</span>
                 </>
                 return <li key={event.id}>{facts.length || event.id.startsWith('garmin-') ? (
                   <details id={event.id}>
-                    <summary>{line}<span aria-hidden="true" className="timeline-arrow">›</span></summary>
+                    <summary>{line}<span className="timeline-arrow"><TodayIcon name="chevron" size={16} /></span></summary>
                     <div className="timeline-details">
                       {facts.length ? facts.map((fact, i) => <div key={i}>{fact}</div>) : 'Aktivität von Garmin übernommen.'}
                     </div>
