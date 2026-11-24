@@ -153,7 +153,6 @@ function RecoveryCard({ snapshot, recovery, openSettings, refresh }: {
       setSyncing(false)
     }
   }
-  const comparisons = metrics.filter((metric) => metric.baseline).slice(0, 2)
   const showingMetrics = state !== 'missing' && state !== 'learning'
 
   return (
@@ -174,14 +173,6 @@ function RecoveryCard({ snapshot, recovery, openSettings, refresh }: {
           <p className="recovery-description">{explain}</p>
         </div>
         {state === 'learning' && <progress className="recovery-progress" value={days} max={10} aria-label="Messtage für deinen Normalbereich" />}
-        {showingMetrics && comparisons.length > 0 && <div className="recovery-metrics">
-          {comparisons.map(({ id, label, value, unit, baseline }) => baseline && (
-            <div key={id}>
-              <span>{label} <strong>{number(value)} {unit}</strong></span>
-              <small>Normal {showRange(baseline)}</small>
-            </div>
-          ))}
-        </div>}
         {state === 'missing' && <button className="recovery-action" onClick={sync} disabled={syncing || !navigator.onLine}>
             <TodayIcon name="sync" size={15} /> {syncing ? 'Prüft …' : 'Nochmal prüfen'}
         </button>}
@@ -275,17 +266,19 @@ function PlanCard({ snapshot, state, openRun, onChange }: {
         : <>{(completed || manualMatch) ? <p className="today-confirm">Erledigt · Aktivität erkannt</p>
           : plannedKind && <div className="today-actions plan-actions">
             <button className="today-chip" disabled={busy} onClick={() => save('done')}><TodayIcon name="check" size={16} />Erledigt</button>
-            {!snapshot.briefing?.deferral && <button className="today-link" disabled={busy} onClick={() => save('move')}>Verschieben</button>}
-            <button className="plan-more" disabled={busy}
-              aria-expanded={choosing} onClick={() => setChoosing(!choosing)}><TodayIcon name="more" size={16} />Andere Aktivität</button>
+            <details className="plan-menu">
+              <summary>Plan ändern <TodayIcon name="chevron" size={16} /></summary>
+              <div className="today-actions">
+                {!snapshot.briefing?.deferral && <button className="today-link" disabled={busy} onClick={() => save('move')}>Verschieben</button>}
+                <button className="today-link" disabled={busy} aria-expanded={choosing}
+                  onClick={() => setChoosing(!choosing)}>Andere Aktivität</button>
+              </div>
+              {choosing && <div className="today-actions plan-options">
+                {otherActivities.map((activity) => <button key={activity} className="today-chip" disabled={busy}
+                  onClick={() => save('other', activity)}>{activity}</button>)}
+              </div>}
+            </details>
           </div>}</>)}
-      {state !== 'red' && choosing && <div className="plan-options">
-        <p className="muted">Andere Aktivität</p>
-        <div className="today-actions">
-          {otherActivities.map((activity) => <button key={activity} className="today-chip" disabled={busy}
-            onClick={() => save('other', activity)}>{activity}</button>)}
-        </div>
-      </div>}
       {error && <p className="error" role="alert">{error}</p>}
     </section>
   )

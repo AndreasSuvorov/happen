@@ -584,7 +584,7 @@ button.today-profile {
 .today-summary > .today-card + .today-card { border-top: 1px solid var(--today-line); }
 
 .today-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
-button.today-link, .today-run, button.today-chip, button.plan-more {
+button.today-link, .today-run, button.today-chip, .plan-menu summary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -598,13 +598,15 @@ button.today-link, .today-run, button.today-chip, button.plan-more {
   text-decoration: none;
 }
 button.today-chip { padding: 4px 8px; border-radius: 8px; border: 1px solid var(--today-line); color: var(--today-text); }
-button.today-link:hover, button.plan-more:hover { background: var(--today-tint); }
+button.today-link:hover, .plan-menu summary:hover { background: var(--today-tint); }
 
-.plan-text { font-size: 16px; font-weight: 500; }
+.plan-text { font-size: 18px; font-weight: 550; }
 .plan-actions { margin-top: 4px; }
-.plan-actions button.plan-more { margin-left: auto; min-width: 44px; justify-content: center; }
-.plan-options { padding: .4rem 0 0; border-top: 1px solid var(--today-line); }
-.plan-options > p { margin-bottom: .3rem; }
+.plan-menu summary { cursor: pointer; list-style: none; }
+.plan-menu summary::-webkit-details-marker { display: none; }
+.plan-menu[open] { flex-basis: 100%; border-top: 1px solid var(--today-line); }
+.plan-menu[open] summary svg { transform: rotate(90deg); }
+.plan-options { padding: 4px 0 8px; }
 .today-run { width: 100%; justify-content: space-between; gap: .65rem; padding-inline: 0; }
 .today-confirm { color: var(--today-accent); font-size: .85rem; font-weight: 650; }
 
@@ -723,22 +725,15 @@ details[open] .timeline-arrow { transform: rotate(90deg); }
 .recovery-red .recovery-landscape::after { background: linear-gradient(152deg, #c0cacf88, #566c7cac); }
 .recovery-missing .recovery-landscape::after { background: linear-gradient(162deg, #d0cec38c, #79877c94); }
 .recovery-learning .recovery-landscape img:first-child, .recovery-unknown .recovery-landscape img { filter: saturate(.11) opacity(.61); }
-.recovery-content { position: relative; padding: 4px 12px 8px; background: #203c31; }
+.recovery-content { position: relative; padding: 8px 12px 12px; background: #203c31; }
 .recovery-heading { display: flex; align-items: center; justify-content: space-between; gap: .25rem; }
 .recovery-title h2 {
   display: flex; align-items: baseline; margin: 0; gap: 8px;
-  color: #fff8e9; font: 400 32px/1 "Instrument Serif", Georgia, serif;
+  color: #fff8e9; font: 400 36px/1 "Instrument Serif", Georgia, serif;
 }
 .recovery-learning .recovery-title h2, .recovery-missing .recovery-title h2 { font-size: 1.67rem; }
 .recovery-symbol { color: var(--signal); font: 600 1rem/1 Geist,sans-serif; }
 .recovery-description { color: #eee9d8; font-size: 12px; line-height: 1.4; }
-.recovery-metrics { margin-top: 8px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid #e9edda38; }
-.recovery-metrics > div { display: grid; padding: 4px 8px 0 0; gap: 2px; }
-.recovery-metrics > div + div { padding-left: .66rem; border-left: 1px solid #e9edda38; }
-.recovery-metrics span, .recovery-metrics small { color: #dce5d4; }
-.recovery-metrics small { font-size: .69rem; }
-.recovery-metrics strong { font: 650 .83rem/1 Geist,sans-serif; color: #fff8e9; letter-spacing: 0; }
-.recovery-metrics span { font-size: .74rem; }
 .recovery-action {
   display: inline-flex; align-items: center; gap: .35rem;
   min-height: 44px; padding: 4px 12px 4px 0; margin: 0;
@@ -757,7 +752,6 @@ details[open] .timeline-arrow { transform: rotate(90deg); }
   .recovery-missing .recovery-landscape::after { background: #67726e70; }
   .recovery-learning .recovery-landscape img.landscape-learned { filter: brightness(.78) saturate(.81); }
 }
-.plan-actions button.plan-more { padding-inline: .3rem; font-size: .74rem; }
 .today-run span { font-size: .73rem; font-weight: 540; text-align: right; }
 .kcal-meter { height: .5rem; }
 .kcal-meter .meter-target { height: 100%; background: var(--today-accent); opacity: .23; }

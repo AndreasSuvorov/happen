@@ -2,6 +2,14 @@
 
 Die Ansichten stammen aus der PWA mit denselben Beispieldaten bei 390 × 844 CSS-Pixeln.
 
+## Klarere Lesereihenfolge
+
+Die Erholung gibt den Einstieg. Die Empfehlung im Trainingsplan hat die nächsthöhere Gewichtung. „Warum?“ öffnet die Messwerte mit Normalbereichen. „Plan ändern“ öffnet Verschieben und andere Aktivitäten. Die Frage lässt sich weiterhin mit einem Tipp beantworten.
+
+[Lesereihenfolge in Hell](images/coach-feinschliff/lesereihenfolge-hell.webp) · [Lesereihenfolge in Dunkel](images/coach-feinschliff/lesereihenfolge-dunkel.webp)
+
+## Erster Feinschliff
+
 [Vergleich in Hell](images/coach-feinschliff/vergleich-hell.webp) · [Vergleich in Dunkel](images/coach-feinschliff/vergleich-dunkel.webp) · [Vergleich der Tageslinie](images/coach-feinschliff/vergleich-tageslinie.webp)
 
 ![Heute vorher und nachher im hellen Modus](images/coach-feinschliff/vergleich-hell.webp)
