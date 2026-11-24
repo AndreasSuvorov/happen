@@ -74,7 +74,9 @@ export async function fetchToken(apiKey: string, opts: ClientOptions = {}): Prom
     opts,
     TOKEN_PATH,
   );
-  if (res.status === 401 || res.status === 403) {
+  // 404 kommt, wenn Garmin den Schlüssel nicht (mehr) kennt (abgelaufen/gelöscht); ein falscher Schlüssel
+  // liefert 401. Beides heißt: Nutzer muss einen neuen Schlüssel anlegen.
+  if (res.status === 401 || res.status === 403 || res.status === 404) {
     await res.body?.cancel();
     throw new GarminKeyError(res.status);
   }

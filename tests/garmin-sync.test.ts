@@ -259,6 +259,11 @@ test("Client: 404 = noch keine Daten, 401 erneuert den Token einmal", async () =
   assert.deepEqual(seen, ["Bearer old", "Bearer new"]);
 });
 
+test("Token: 404 (Schlüssel bei Garmin unbekannt) → GarminKeyError", async () => {
+  const gone = async () => new Response('{"error":"NOT_FOUND","status":404}', { status: 404 });
+  await assert.rejects(fetchToken("k", { fetchFn: gone as typeof fetch, sleep: async () => {} }), GarminKeyError);
+});
+
 test("Token: Antwort ist der JWT als Text, 401 → GarminKeyError", async () => {
   const ok = (async () => new Response(TOKEN)) as typeof fetch;
   const t = await fetchToken("k", { fetchFn: ok, sleep: noSleep });
