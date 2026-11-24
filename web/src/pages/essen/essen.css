@@ -1,0 +1,410 @@
+/* Essen-Tab und Bottom-Sheet „Mahlzeit erfassen“ (Design: Essen.dc.html, Erfassen.dc.html) */
+
+.page.essen {
+  gap: 14px;
+}
+
+.essen-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 0 4px;
+}
+
+.essen-title {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.essen-add {
+  height: 44px;
+  padding: 0 16px 0 12px;
+  border-radius: 999px;
+  background: var(--c-accent);
+  color: var(--c-accent-ink);
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+:where(.coach) a.essen-add {
+  color: var(--c-accent-ink);
+}
+
+/* Bilanz */
+.card.essen-balance {
+  padding: 16px;
+  gap: 14px;
+}
+
+.essen-balance-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.essen-balance-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.essen-big {
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.8px;
+  line-height: 1.1;
+}
+
+.essen-unit {
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--c-muted);
+}
+
+.essen-bar-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.essen-bar {
+  position: relative;
+  height: 12px;
+  border-radius: 6px;
+  background: var(--c-track);
+  overflow: hidden;
+}
+
+.essen-bar > div {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.essen-bar-target {
+  background: var(--c-band);
+}
+
+.essen-bar-solid {
+  left: 0;
+  background: var(--c-fill);
+  border-radius: 6px;
+}
+
+.essen-bar-fuzz {
+  background: linear-gradient(90deg, var(--c-fill), transparent);
+}
+
+.essen-axis {
+  position: relative;
+  height: 16px;
+}
+
+.essen-axis span {
+  position: absolute;
+  white-space: nowrap;
+}
+
+/* Mahlzeiten */
+.essen-meals {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row.essen-row {
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+}
+
+.essen-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.essen-row-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.essen-slot-tile {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 1.5px dashed var(--c-line);
+  box-sizing: border-box;
+}
+
+.essen-slot-add {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--c-line);
+  color: var(--c-accent-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+/* Gewicht */
+.card.essen-weight {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.essen-weight-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.essen-weight-value {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+/* Gestern */
+.essen-yesterday {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  min-height: 56px;
+  box-sizing: border-box;
+  border-radius: var(--radius-card);
+  background: var(--c-soft);
+  text-decoration: none;
+}
+
+:where(.coach) a.essen-yesterday,
+:where(.coach) a.essen-row {
+  color: var(--c-ink);
+}
+
+/* Sheet „Mahlzeit erfassen“ */
+.erfassen-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-title.small.erfassen-title {
+  letter-spacing: -0.3px;
+  line-height: 1.1;
+}
+
+.erfassen-close {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  color: var(--c-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.erfassen-modes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.erfassen-mode {
+  height: 96px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--c-line);
+  background: var(--c-surface);
+  color: var(--c-ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 0;
+}
+
+.erfassen-mode .erfassen-mode-icon {
+  color: var(--c-accent-text);
+}
+
+.erfassen-mode.primary,
+.erfassen-mode[aria-pressed='true'] {
+  border-color: transparent;
+  background: var(--c-accent);
+  color: var(--c-accent-ink);
+}
+
+.erfassen-mode:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* Aufnahme läuft: pulsierender Punkt (ohne Bewegung bei reduzierter Bewegung) */
+.erfassen-rec {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.erfassen-rec::before {
+  content: '';
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: currentColor;
+  animation: erfassen-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes erfassen-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.erfassen-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+}
+
+.erfassen-row {
+  display: flex;
+  gap: 8px;
+}
+
+.input.erfassen-input {
+  flex: 1;
+  height: 48px;
+  width: auto;
+  font-size: 16px;
+}
+
+.erfassen-send {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  border: 0;
+  background: var(--c-accent);
+  color: var(--c-accent-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.erfassen-send:disabled {
+  opacity: 0.55;
+}
+
+.erfassen-recent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.erfassen-recent .chip {
+  padding: 0 14px;
+}
+
+.erfassen-hint {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.erfassen-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.erfassen-progress-bar {
+  position: relative;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--c-track);
+  overflow: hidden;
+}
+
+.erfassen-progress-bar > div {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  border-radius: 3px;
+  background: var(--c-fill);
+  animation: erfassen-slide 1.4s ease-in-out infinite;
+}
+
+@keyframes erfassen-slide {
+  from {
+    left: -40%;
+  }
+  to {
+    left: 100%;
+  }
+}
+
+.erfassen-done {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-card);
+  padding: 14px;
+}
+
+.erfassen-done-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .erfassen-rec::before {
+    animation: none;
+  }
+
+  .erfassen-progress-bar > div {
+    animation: none;
+    left: 0;
+    width: 100%;
+    opacity: 0.5;
+  }
+}
+
+/* Ring bei 0 g: die runde Kappe würde sonst einen Punkt zeichnen */
+.essen-ring-empty svg circle + circle {
+  display: none;
+}
