@@ -302,7 +302,8 @@ export default function Tageslinie({ profile: _profile }: { profile: Profile }) 
     isToday ? (d === today ? 'Heute' : 'Gestern') : `${longDate(d).split(',')[0]}, ${shortDate(d)}`
 
   const events = data ? buildEvents(data, today) : []
-  const groups = [prev, date].map((d) => ({ day: d, items: events.filter((e) => e.ts.slice(0, 10) === d) }))
+  // Neueste zuerst: oben „Heute“ mit dem Jüngsten (geplant, Jetzt, …), darunter der Vortag.
+  const groups = [date, prev].map((d) => ({ day: d, items: events.filter((e) => e.ts.slice(0, 10) === d).reverse() }))
   const status: RecoveryStatus | null = data?.briefing?.status ?? null
   const plan = planLabel(data?.briefing ?? null)
 
