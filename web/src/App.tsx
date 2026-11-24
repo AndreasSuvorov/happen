@@ -24,14 +24,15 @@ export default function App() {
 
   return (
     <div className="app today-app">
-      <header className="topbar today-topbar">
+      {activeTab !== 'today' && <header className="topbar today-topbar">
         <strong className="today-wordmark">happen<span aria-hidden="true">.</span></strong>
         {currentProfile && <button className="today-profile" aria-label="Einstellungen" onClick={() => setTab('settings')}>
           {currentProfile.first_name?.trim().charAt(0).toLocaleUpperCase('de-DE') || <TodayIcon name="person" size={19} />}
         </button>}
-      </header>
+      </header>}
       <main className={activeTab === 'chat' ? 'main-flush' : undefined}>
         {activeTab === 'today' && <Today key={session.user.id} authUserId={session.user.id}
+          profileInitial={currentProfile?.first_name?.trim().charAt(0).toLocaleUpperCase('de-DE')}
           openSettings={() => setTab('settings')} openCapture={() => openChat(true)} />}
         {currentProfile && activeTab === 'history' && <Dashboard profile={currentProfile} />}
         {currentProfile && activeTab === 'chat' && <Chat profile={currentProfile} capture={capture} />}

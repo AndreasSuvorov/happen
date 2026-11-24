@@ -44,3 +44,9 @@ test("Erholung in der Einlernphase zeigt die Messwerte ohne Ampelwertung", () =>
   assert.equal(result.days, 0);
   assert.deepEqual(result.metrics[0].baseline, { low: 55, high: 75 });
 });
+
+test("Fehlende HRV zeigt die ausstehende Nacht auch bei vorhandenen anderen Werten", () => {
+  const partial = { ...snapshot, metrics: [{ ...snapshot.metrics[0], hrv_last_night: null }] };
+  assert.equal(todayRecovery(partial).state, "missing");
+  assert.equal(todayRecovery(snapshot).state, "learning");
+});

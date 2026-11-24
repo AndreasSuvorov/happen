@@ -1,5 +1,7 @@
 # Coach M3 – Heute und Tageslinie
 
+[Designrunde 2 mit allen Zuständen und dem Komponentenblatt](Coach-M3-Designrunde-2.md).
+
 Die PWA startet mit „Heute“. Die Route `/heute` öffnet dieselbe Ansicht aus der Push-Mitteilung.
 Die Tageslinie zeigt Schlaf, Aktivitäten, Mahlzeiten, Notizen und Auffälligkeiten von heute und gestern.
 Die Uhrzeiten folgen der Garmin-Zeitzone, sonst der Zeitzone des Happen-Profils.

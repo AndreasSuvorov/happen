@@ -7,10 +7,16 @@ export type MetricDay = SignalDay & { sleep_start_local: string | null; resting_
 type Meal = Pick<Entry, 'id' | 'meal' | 'title' | 'kcal_low' | 'kcal_mid' | 'kcal_high' | 'protein_g' |
   'carbs_g' | 'fat_g' | 'confidence'> & { local_time: string; note: string | null }
 type Activity = { local_time: string; id: string; type: string; distance_km: number | null; duration_min: number | null; kcal_gross: number | null }
-type WearableActivity = {
+export type RunAnalysisData = {
+  verdict?: string; share_below_cap?: number; easy_hr_cap?: number
+  series?: { minute: number; bpm: number; pace_min_km?: number; elevation_m?: number }[]
+  explanation?: string; comparison?: string; tip?: string; sensor?: string
+}
+export type WearableActivity = {
   started_at_local: string; provider: string; external_id: string; type: string; name: string | null
   duration_s: number | null; distance_m: number | null; avg_hr: number | null
-  analysis: { verdict?: string } | null
+  training_load?: number | null
+  analysis: RunAnalysisData | null
 }
 export type ContextNote = { id: string; date: string; tag: string | null; text: string | null }
 export type PlanAction = { action: 'done' | 'move' | 'other'; activity: string | null }
@@ -58,6 +64,7 @@ export const number = (n: number) => n.toLocaleString('de-DE', { maximumFraction
 export const prettyDate = (date: string) => new Date(date + 'T12:00:00Z').toLocaleDateString('de-DE', {
   weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC',
 })
+export const showRange = ({ low, high }: { low: number; high: number }) => `${number(low)}–${number(high)}`
 
 const metricSpecs = [
   ['hrv_last_night', 'HRV', 'ms', 'Zeigt, wie sich der Abstand zwischen deinen Herzschlägen nachts verändert.'],
@@ -81,7 +88,26 @@ export function todayRecovery(snapshot: TodayData) {
     const baseline = low != null && high != null && low <= high ? { low, high } : ranges[id]
     return [{ id, label, unit, explanation, value, baseline, flagged: !!reason }]
   }).sort((a, b) => Number(b.flagged) - Number(a.flagged))
-  return { day, status: signal.status, days, metrics }
+  const needsNight = !day?.sleep_end_local || day.sleep_uncertain || day.hrv_last_night == null
+  const pattern = signal.reasons.some((r) => r.metric === 'sleep_resp_avg' && r.severity === 'red') &&
+    signal.reasons.some((r) => r.metric === 'sleep_hr_avg' || r.metric === 'hrv_last_night')
+  const state: Status | 'missing' | 'learning' = needsNight ? 'missing' : days < 10 ? 'learning' : signal.status
+  const normalHrv = metrics.some((m) => m.id === 'hrv_last_night' && m.baseline &&
+    m.value >= m.baseline.low && m.value <= m.baseline.high)
+  const normalPulse = metrics.some((m) => m.id === 'sleep_hr_avg' && m.baseline &&
+    m.value >= m.baseline.low && m.value <= m.baseline.high)
+  const hrvAboveRange = metrics.some((m) => m.id === 'hrv_last_night' && m.baseline && m.value > m.baseline.high)
+  const explain = state === 'green' && normalHrv && normalPulse
+    ? 'Deine HRV liegt im Normalbereich, dein Schlafpuls ist wie sonst.'
+    : state === 'green' && hrvAboveRange && normalPulse
+      ? 'Deine HRV liegt über deinem Normalbereich, dein Schlafpuls ist wie sonst.'
+    : state === 'green' ? 'Deine gemessenen Werte zeigen insgesamt gute Erholung.'
+      : state === 'yellow' ? 'Deine Werte sprechen heute für eine leichtere Einheit.'
+        : state === 'red' && pattern ? 'Deine Werte weichen deutlich ab. Achte auf Symptome und lass das Training heute aus.'
+          : state === 'red' ? 'Mehrere Werte weichen von deinem Normalbereich ab. Gönn dir heute Ruhe.'
+            : state === 'missing' ? 'Öffne kurz Garmin Connect auf dem Handy.'
+              : state === 'learning' ? `Tag ${days} von 10` : 'Für eine Einordnung fehlen vergleichbare Werte.'
+  return { day, status: signal.status, state, days, metrics, explain }
 }
 
 export function todayNutrition(snapshot: TodayData) {
@@ -106,6 +132,15 @@ export function todayNutrition(snapshot: TodayData) {
   }
   const proteinTarget = weight ? Math.round(weight.kg * 1.2) : null
   return { ...totals, count: meals.length, target, proteinTarget }
+}
+
+export function nutritionContext(snapshot: TodayData, intake: ReturnType<typeof todayNutrition>, now = new Date()) {
+  const hour = Number(new Intl.DateTimeFormat('en-GB', { timeZone: snapshot.timezone, hour: '2-digit', hourCycle: 'h23' }).format(now))
+  if (hour >= 11 && hour < 16 && intake.count > 0 && intake.target && intake.high < intake.target.low / 3) {
+    return 'Bisher wenig erfasst. Plane ein sättigendes Mittagessen.'
+  }
+  const food = snapshot.briefing?.food
+  return food && !food.startsWith('Für gestern') ? food : ''
 }
 
 const activityLabels = { run: 'Lauf', strength: 'Krafttraining', bike: 'Radfahren', walk: 'Spaziergang', swim: 'Schwimmen' }

@@ -2,21 +2,25 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { addDays } from '../../../supabase/functions/_shared/garmin/transform.ts'
 import { supabase } from '../lib/supabase'
 import TodayIcon from '../components/TodayIcon'
+import RunAnalysis from './RunAnalysis'
 import recoveryLandscape from '../assets/recovery-landscape.webp'
 import {
   activityKind, buildTimeline, cacheToday, number, prettyDate, readToday, todayNutrition,
-  todayRecovery, wearableSummary, type ContextNote, type PlanAction, type TodayData,
+  todayRecovery, wearableSummary, nutritionContext, showRange, type ContextNote, type PlanAction, type TodayData, type WearableActivity,
 } from '../lib/today'
 
-const recoveryLabels = { green: 'Gut erholt', yellow: 'Etwas müde',
-  red: 'Heute schonen', unknown: 'Erholung noch offen' } as const
-const recoveryIcons = { green: 'pulse', yellow: 'moon', red: 'rest', unknown: 'more' } as const
+const recoveryLabels = {
+  green: ['●', 'Gut erholt'], yellow: ['◐', 'Etwas müde'], red: ['○', 'Heute schonen'],
+  learning: ['◌', 'Ich lerne dich noch kennen'], missing: ['–', 'Deine Nacht ist noch nicht da'],
+  unknown: ['◌', 'Erholung noch offen'],
+} as const
 const otherActivities = ['Krafttraining', 'Radfahren', 'Spaziergang', 'Laufen', 'Schwimmen', 'Sonstiges']
 
-export default function Today({ authUserId, openSettings, openCapture }: {
-  authUserId: string; openSettings: () => void; openCapture: () => void
+export default function Today({ authUserId, profileInitial, openSettings, openCapture }: {
+  authUserId: string; profileInitial?: string; openSettings: () => void; openCapture: () => void
 }) {
   const [snapshot, setSnapshot] = useState(() => readToday(authUserId))
+  const [selectedRun, setSelectedRun] = useState<WearableActivity | null>(null)
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(true)
   const revision = useRef(0)
@@ -79,38 +83,44 @@ export default function Today({ authUserId, openSettings, openCapture }: {
     </div>
   )
 
+  const recovery = todayRecovery(snapshot)
   const question = snapshot.briefing?.question
   const pending = question && !snapshot.notes.some((note) => note.date === question.date)
 
   return (
     <div className="screen today-screen">
+      {selectedRun && <RunAnalysis activity={selectedRun} onClose={() => setSelectedRun(null)} />}
       <header className="today-heading">
         <h1>Heute</h1>
         <time className="date-heading" dateTime={snapshot.date}>{prettyDate(snapshot.date)}</time>
+        <button className="today-profile" aria-label="Einstellungen" onClick={openSettings}>
+          {profileInitial || <TodayIcon name="person" size={19} />}
+        </button>
       </header>
       {(message || !navigator.onLine) && <p className="muted" role="status">{message || 'Offline · letzter gespeicherter Stand'}</p>}
-      <RecoveryCard snapshot={snapshot} openSettings={openSettings} refresh={refresh} />
+      <RecoveryCard snapshot={snapshot} recovery={recovery} openSettings={openSettings} refresh={refresh} />
       <div className="today-summary">
         {snapshot.connection && snapshot.briefing?.today && <PlanCard
-          key={snapshot.date} snapshot={snapshot} onChange={(plan_action) => update({ plan_action })}
+          key={snapshot.date} snapshot={snapshot} state={recovery.state} openRun={setSelectedRun}
+          onChange={(plan_action) => update({ plan_action })}
         />}
         <NutritionCard snapshot={snapshot} openCapture={openCapture} />
       </div>
       <QuestionCard key={`${snapshot.date}:${question?.date ?? ''}`} snapshot={snapshot}
         open={!!pending} onAnswer={(note) => update({ notes: [...snapshot.notes, note] })} />
-      <Timeline snapshot={snapshot} />
+      <Timeline snapshot={snapshot} openRun={setSelectedRun} />
     </div>
   )
 }
 
-function RecoveryCard({ snapshot, openSettings, refresh }: {
-  snapshot: TodayData; openSettings: () => void; refresh: () => Promise<void>
+function RecoveryCard({ snapshot, recovery, openSettings, refresh }: {
+  snapshot: TodayData; recovery: ReturnType<typeof todayRecovery>; openSettings: () => void; refresh: () => Promise<void>
 }) {
   const [syncing, setSyncing] = useState(false)
   const [feedback, setFeedback] = useState('')
   const why = useRef<HTMLDialogElement>(null)
-  const { day, status, days, metrics } = todayRecovery(snapshot)
-  const label = recoveryLabels[status]
+  const { state, days, metrics, explain } = recovery
+  const [symbol, label] = recoveryLabels[state]
   const { connection, garmin } = snapshot
   if (!connection) return (
     <section className="card today-card">
@@ -143,45 +153,43 @@ function RecoveryCard({ snapshot, openSettings, refresh }: {
       setSyncing(false)
     }
   }
-  const needsNight = !day?.sleep_end_local || day.sleep_uncertain || day.hrv_last_night == null
   const comparisons = metrics.filter((metric) => metric.baseline).slice(0, 2)
-  const description = needsNight ? 'Deine Nacht ist noch nicht da. Öffne kurz Garmin Connect auf dem Handy.'
-    : days < 10 ? `Ich lerne dich noch kennen (Tag ${days} von 10).`
-      : comparisons.length ? '' : snapshot.briefing?.why || 'Für heute fehlen vergleichbare Werte.'
+  const showingMetrics = state !== 'missing' && state !== 'learning'
 
   return (
-    <section className={`recovery-hero recovery-${status}`}>
+    <section className={`recovery-hero recovery-${state}`} data-recovery={state}>
       <div className="recovery-landscape" aria-hidden="true">
         <img src={recoveryLandscape} alt="" fetchPriority="high" />
+        {state === 'learning' && <img className="landscape-learned" src={recoveryLandscape} alt=""
+          style={{ clipPath: `inset(0 ${(10 - days) * 10}% 0 0)` }} />}
       </div>
-      <div className="recovery-overview">
+      <div className="recovery-content">
         <div className="recovery-title">
-          <h2>Erholung</h2>
-          <strong>{label}</strong>
-        </div>
-        <div className="recovery-orbit" aria-hidden="true"><TodayIcon name={recoveryIcons[status]} size={31} /></div>
-      </div>
-      {description && <p className="recovery-description">{description}</p>}
-      {!description && <div className="recovery-metrics">
-        {comparisons.map(({ id, label, value, unit, baseline }) => baseline && (
-          <div key={id}>
-            <span>{label}</span>
-            <strong>{number(value)} <small>{unit}</small></strong>
-            <small>Normal {number(baseline.low)}{baseline.high !== baseline.low && '–' + number(baseline.high)}</small>
+          <div className="recovery-heading">
+            <h2><span className="recovery-symbol" aria-hidden="true">{symbol}</span>{label}</h2>
+            {showingMetrics && metrics.length > 0 && <button className="recovery-action" onClick={() => why.current?.showModal()}>
+              Warum? <TodayIcon name="chevron" size={15} />
+            </button>}
           </div>
-        ))}
-      </div>}
-      {connection.backfill && days < 10 && <p className="recovery-description">Ich lade deine letzten vier Wochen.</p>}
-      <div className="recovery-actions">
-        {metrics.length > 0 && <button onClick={() => why.current?.showModal()}>Warum? <TodayIcon name="chevron" size={15} /></button>}
-        <button onClick={sync} disabled={syncing || !navigator.onLine}>
-          <TodayIcon name="sync" size={15} /> {syncing ? 'Prüft …' : 'Nochmal prüfen'}
-        </button>
+          <p className="recovery-description">{explain}</p>
+        </div>
+        {state === 'learning' && <progress className="recovery-progress" value={days} max={10} aria-label="Messtage für deinen Normalbereich" />}
+        {showingMetrics && comparisons.length > 0 && <div className="recovery-metrics">
+          {comparisons.map(({ id, label, value, unit, baseline }) => baseline && (
+            <div key={id}>
+              <span>{label} <strong>{number(value)} {unit}</strong></span>
+              <small>Normal {showRange(baseline)}</small>
+            </div>
+          ))}
+        </div>}
+        {state === 'missing' && <button className="recovery-action" onClick={sync} disabled={syncing || !navigator.onLine}>
+            <TodayIcon name="sync" size={15} /> {syncing ? 'Prüft …' : 'Nochmal prüfen'}
+        </button>}
+        {feedback && <p className="recovery-description" role="status">{feedback}</p>}
       </div>
-      {feedback && <p className="recovery-description" role="status">{feedback}</p>}
       <dialog ref={why} className="today-dialog" aria-labelledby="why-heading">
         <form method="dialog" className="dialog-heading">
-          <h2 id="why-heading">Warum {label.toLowerCase()}?</h2>
+          <h2 id="why-heading">Warum?</h2>
           <button className="today-link">Schließen</button>
         </form>
         {metrics.map(({ id, label: name, value, unit, baseline, explanation }) => {
@@ -197,7 +205,7 @@ function RecoveryCard({ snapshot, openSettings, refresh }: {
                   <i className="meter-target" style={{ left: `${position(baseline.low)}%`, width: `${position(baseline.high) - position(baseline.low)}%` }} />
                   <i className="meter-marker" style={{ left: `${position(value)}%` }} />
                 </div>
-                <span className="muted">Normalbereich {number(baseline.low)}–{number(baseline.high)} {unit}</span>
+                <span className="muted">Normalbereich {showRange(baseline)} {unit}</span>
               </>}
               <p className="muted">{explanation}</p>
             </div>
@@ -208,11 +216,17 @@ function RecoveryCard({ snapshot, openSettings, refresh }: {
   )
 }
 
-function PlanCard({ snapshot, onChange }: { snapshot: TodayData; onChange: (action: PlanAction) => void }) {
+function PlanCard({ snapshot, state, openRun, onChange }: {
+  snapshot: TodayData; state: ReturnType<typeof todayRecovery>['state']
+  openRun: (run: WearableActivity) => void; onChange: (action: PlanAction) => void
+}) {
   const [busy, setBusy] = useState(false)
   const [choosing, setChoosing] = useState(false)
   const [error, setError] = useState('')
-  const plan = snapshot.briefing!.today
+  const briefing = snapshot.briefing!
+  const plan = state === 'red' ? { type: 'rest', text: 'Ruhetag. Ein Spaziergang ist optional.' } : briefing.today
+  const planText = state === 'yellow' && briefing.status === 'green' && plan.type.endsWith('_run')
+    ? 'Lauf heute kürzer und lockerer.' : plan.text
   const action = snapshot.plan_action
   const plannedKind = plan.type === 'strength' ? 'strength' : plan.type.endsWith('_run') ? 'run' : null
   const completed = snapshot.wearable_activities.find((item) => item.started_at_local.startsWith(snapshot.date) &&
@@ -242,27 +256,34 @@ function PlanCard({ snapshot, onChange }: { snapshot: TodayData; onChange: (acti
       <div className="plan-content">
         <span className="plan-icon"><TodayIcon name="route" /></span>
         <div><h2>Dein Plan</h2>
-      {run && runSummary && plannedKind !== 'strength' ? (
-        <a className="today-run" href={`#garmin-${run.provider}-${run.external_id}`} onClick={() => {
+      {state !== 'red' && run && runSummary && plannedKind !== 'strength' ? (
+        <a className="today-run" href={`#garmin-${run.provider}-${run.external_id}`} onClick={(event) => {
+          if (run.analysis?.verdict) {
+            event.preventDefault()
+            openRun(run)
+            return
+          }
           const item = document.getElementById(`garmin-${run.provider}-${run.external_id}`)
           if (item instanceof HTMLDetailsElement) item.open = true
         }}>
-          <strong>{runSummary.verdict || 'Lauf aufgezeichnet'}</strong>
-          {runSummary.duration != null && <span>{number(runSummary.duration)} min</span>}
+          <strong>{runSummary.verdict || 'Lauf aufgezeichnet'}{run.analysis?.verdict === 'easy_ok' && ' ✓'}</strong>
+          {run.analysis?.share_below_cap != null && run.analysis.easy_hr_cap != null
+            ? <span>{number(run.analysis.share_below_cap * 100)} % unter {number(run.analysis.easy_hr_cap)} bpm</span>
+            : runSummary.duration != null && <span>{number(runSummary.duration)} min</span>}
         </a>
-      ) : <p className="plan-text">{plan.text}</p>}
+      ) : <p className="plan-text">{planText}</p>}
         </div>
       </div>
-      {action ? <p className="today-confirm" role="status">{action.action === 'move' ? 'Auf morgen verschoben.'
+      {state !== 'red' && (action ? <p className="today-confirm" role="status">{action.action === 'move' ? 'Auf morgen verschoben.'
         : action.action === 'other' ? `Notiert: ${action.activity}` : 'Erledigt ✓'}</p>
         : <>{(completed || manualMatch) ? <p className="today-confirm">Erledigt · Aktivität erkannt</p>
           : plannedKind && <div className="today-actions plan-actions">
             <button className="today-chip" disabled={busy} onClick={() => save('done')}><TodayIcon name="check" size={17} />Erledigt</button>
             {!snapshot.briefing?.deferral && <button className="today-link" disabled={busy} onClick={() => save('move')}>Verschieben</button>}
-            <button className="plan-more" aria-label="Hab was anderes gemacht" title="Hab was anderes gemacht" disabled={busy}
-              aria-expanded={choosing} onClick={() => setChoosing(!choosing)}><TodayIcon name="more" size={22} /></button>
-          </div>}</>}
-      {choosing && <div className="plan-options">
+            <button className="plan-more" disabled={busy}
+              aria-expanded={choosing} onClick={() => setChoosing(!choosing)}><TodayIcon name="more" size={17} />Andere Aktivität</button>
+          </div>}</>)}
+      {state !== 'red' && choosing && <div className="plan-options">
         <p className="muted">Andere Aktivität</p>
         <div className="today-actions">
           {otherActivities.map((activity) => <button key={activity} className="today-chip" disabled={busy}
@@ -275,7 +296,9 @@ function PlanCard({ snapshot, onChange }: { snapshot: TodayData; onChange: (acti
 }
 
 function NutritionCard({ snapshot, openCapture }: { snapshot: TodayData; openCapture: () => void }) {
-  const { count, low, high, protein, proteinTarget, target } = todayNutrition(snapshot)
+  const intake = todayNutrition(snapshot)
+  const { count, low, high, protein, proteinTarget, target } = intake
+  const foodTip = nutritionContext(snapshot, intake)
   const max = Math.max(high, target?.high ?? 0, 1) * 1.08
   const percent = (n: number) => `${100 * n / max}%`
   const ring = Math.min(1, protein / (proteinTarget || 1))
@@ -286,12 +309,12 @@ function NutritionCard({ snapshot, openCapture }: { snapshot: TodayData; openCap
         <>
           <div className="nutrition-grid">
             <div>
-              <div className="today-energy"><strong>{number(low)}–{number(high)}</strong> <span>kcal</span></div>
-              <div className="today-meter" aria-hidden="true">
+              <div className="today-energy"><strong>{number(low)}–{number(high)}</strong> <span>kcal erfasst</span></div>
+              <div className="today-meter kcal-meter" aria-hidden="true">
                 {target && <i className="meter-target" style={{ left: percent(target.low), width: percent(target.high - target.low) }} />}
                 <i className="meter-intake" style={{ left: percent(low), width: percent(high - low) }} />
               </div>
-              {target && <p className="muted">Ziel {number(target.low)}{target.low !== target.high && `–${number(target.high)}`} kcal</p>}
+              {target && <p className="muted kcal-key"><i aria-hidden="true" />Ziel {number(target.low)}{target.low !== target.high && `–${number(target.high)}`} kcal</p>}
             </div>
             <div className="today-protein">
               {proteinTarget != null && <span className="protein-ring" style={{ '--progress': `${ring * 360}deg` } as React.CSSProperties} aria-hidden="true" />}
@@ -299,7 +322,7 @@ function NutritionCard({ snapshot, openCapture }: { snapshot: TodayData; openCap
               <span className="muted">Eiweiß{proteinTarget != null && ` · Richtwert ${proteinTarget} g`}</span>
             </div>
           </div>
-          {snapshot.briefing?.food && !snapshot.briefing.food.startsWith('Für gestern') && <p className="muted">{snapshot.briefing.food}</p>}
+          {foodTip && <p className="muted food-context">{foodTip}</p>}
         </>
       )}
       {snapshot.briefing?.weigh && snapshot.weight?.date !== snapshot.date && <p className="muted">Ab halb acht kannst du dich kurz wiegen.</p>}
@@ -314,6 +337,7 @@ function QuestionCard({ snapshot, open, onAnswer }: { snapshot: TodayData; open:
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [noted, setNoted] = useState(false)
+  const [selected, setSelected] = useState<string | null>(null)
   const timer = useRef<number>(0)
   useEffect(() => () => window.clearTimeout(timer.current), [])
   const question = snapshot.briefing?.question
@@ -321,6 +345,7 @@ function QuestionCard({ snapshot, open, onAnswer }: { snapshot: TodayData; open:
 
   async function answer(option: string, text?: string) {
     setBusy(true)
+    setSelected(option)
     setError('')
     try {
       const { data, error } = await supabase.rpc('answer_coach_question', {
@@ -331,6 +356,7 @@ function QuestionCard({ snapshot, open, onAnswer }: { snapshot: TodayData; open:
       onAnswer(data as ContextNote)
       timer.current = window.setTimeout(() => setNoted(false), 1800)
     } catch {
+      setSelected(null)
       setError('Die Antwort konnte nicht gespeichert werden.')
     } finally {
       setBusy(false)
@@ -343,8 +369,15 @@ function QuestionCard({ snapshot, open, onAnswer }: { snapshot: TodayData; open:
         <h2>Eine Frage</h2>
         <p className="question-text">{question.text}</p>
         <div className="today-actions question-options">
-          {question.options.map((option) => <button className="today-chip" disabled={busy} key={option}
-            onClick={() => option === 'Andere…' ? setCustom(true) : answer(option)}>{option}</button>)}
+          {question.options.map((option) => <button className="today-chip" aria-pressed={option === selected} disabled={busy} key={option}
+            onClick={() => {
+              if (option === 'Andere…') {
+                setCustom(true)
+                setSelected(option)
+              } else {
+                void answer(option)
+              }
+            }}>{option}</button>)}
         </div>
         {custom && <form className="today-answer" onSubmit={(event) => {
           event.preventDefault()
@@ -359,26 +392,30 @@ function QuestionCard({ snapshot, open, onAnswer }: { snapshot: TodayData; open:
   )
 }
 
-function Timeline({ snapshot }: { snapshot: TodayData }) {
-  const events = buildTimeline(snapshot)
+function Timeline({ snapshot, openRun }: { snapshot: TodayData; openRun: (run: WearableActivity) => void }) {
   const yesterday = addDays(snapshot.date, -1)
+  const events = buildTimeline(snapshot).filter((event) => event.date !== yesterday || !event.time || event.time >= '18:00')
   return (
     <section className="today-timeline" id="tageslinie">
       <h2>Tageslinie</h2>
-      {[snapshot.date, yesterday].map((date) => (
+      {[yesterday, snapshot.date].map((date) => (
         <div key={date}>
           <h3>{date === snapshot.date ? 'Heute' : 'Gestern'} <span className="muted">· {prettyDate(date)}</span></h3>
           {events.some((event) => event.date === date) ? (
             <ol className="timeline-list">
               {events.filter((event) => event.date === date).map((event) => {
                 const facts = event.facts.filter(Boolean)
+                const run = snapshot.wearable_activities.find((item) =>
+                  `garmin-${item.provider}-${item.external_id}` === event.id && item.analysis?.verdict && activityKind(item.type) === 'run')
                 const line = <>
                   <span className="timeline-time">{event.time || '—'}</span>
                   <span className="timeline-icon" aria-hidden="true"><TodayIcon name={event.icon === '☾' ? 'moon' : event.icon === '☀' ? 'sun'
                     : event.icon === '◈' ? 'meal' : event.icon === '·' ? 'note' : 'pulse'} size={16} /></span>
                   <span className="timeline-label"><strong>{event.title}</strong>{event.summary && <span className="muted">{event.summary}</span>}</span>
                 </>
-                return <li key={event.id}>{facts.length || event.id.startsWith('garmin-') ? (
+                return <li key={event.id}>{run ? (
+                  <button className="timeline-row timeline-open" onClick={() => openRun(run)}>{line}<TodayIcon name="chevron" size={16} /></button>
+                ) : facts.length || event.id.startsWith('garmin-') ? (
                   <details id={event.id}>
                     <summary>{line}<span className="timeline-arrow"><TodayIcon name="chevron" size={16} /></span></summary>
                     <div className="timeline-details">
